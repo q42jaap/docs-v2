@@ -1,16 +1,28 @@
-1. Introduction
-    This guide is for developers who want to build Internet-of-Things (IoT) applications using the InfluxDB API.
-    The InfluxDB API provides programmatic access to the InfluxDB platform for writing, querying, and managing time series data.
-    API client libraries maintained by InfluxDB and the user community enable developers to take
-    advantage of common patterns in their language of choice and avoid writing boilerplate code.
-    In this guide, you'll walk through the process of building a real application that manages IoT devices, writes data to InfluxDB, queries data from InfluxDB to create data visualizations, and monitors the health of devices and the application itself.
-    You'll learn:
-    - the basics of InfluxDB and the REST API
-    - how to install a client library
-    - how to write data to influxDB
-    - how to query data
+## Build a starter IoT app with the InfluxDB API and client libraries
+
+## Introduction
+
+This guide is for developers who want to build Internet-of-Things (IoT) applications using the InfluxDB API.
+API client libraries maintained by InfluxDB and the user community enable developers to take
+advantage of common patterns in their language of choice and idiomatic handling
+of InfluxDB requests, responses, and errors.
+In this guide, you'll walk through the basics of using the InfluxDB API and
+client libraries in the
+context of building a real application.
+Along the way, we'll break down
+the architecture and flow of events between the IoT Center UI, server, and InfluxDB.
+You'll see code samples that use InfluxDB API client libraries to
+manage IoT devices, write data to InfluxDB, query data from InfluxDB, create visualizations, and monitor the health of devices and the application itself.
+
+You'll learn:
+- the basics of InfluxDB and the REST API
+- how to install a client library
+- how to write data to influxDB
+- how to query data
+
 1. Setup InfluxDB
-   1. InfluxDB URL, Org, Bucket, All-Access Token
+  - InfluxDB URL, Org, Bucket
+  - [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
 1. Start with an API client (InfluxDB basics)
    1. API basics
    2. Create an API token
@@ -31,11 +43,9 @@
 ## Authorization and authentication in InfluxDB
 
 To write to InfluxDB, your application or device must authenticate and have the required permissions.
-An InfluxDB **authorization** consists of a set of permissions and an API token.
+An InfluxDB **authorization** consists of a set of permissions and an API token. Permissions allow the API token bearer, i.e. your application, to read and write resources in your **organization**.
 
-Learn how to [create an authorization](/influxdb/v2.1/security/tokens/create-token/).
-
-#### Example: view an authorization
+#### Example: get authorization details from InfluxDB
 
 Authorization from [GET `/api/v2/authorizations`]()
 
@@ -70,9 +80,29 @@ Authorization from [GET `/api/v2/authorizations`]()
  }
 ```
 
-To authenticate InfluxDB API requests, your device passes the API token in the `Authorization` request header.
+### InfluxDB: create an All-Access token
 
-Learn how to [use an authorization](/influxdb/v2.1/security/tokens/use-tokens/).
+{{% note %}}
+
+To learn more, see how to [create an authorization](/influxdb/v2.1/security/tokens/create-token/).
+
+{{% /note %}}
+
+### InfluxDB: use your token to authenticate API requests
+
+To authenticate InfluxDB API requests, your device passes the `Token` scheme and the API token in the `Authorization` request header.
+
+{{% note %}}
+
+To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/use-tokens/).
+
+{{% /note %}}
+
+#### IoT Center: add your token
+
+In IoT Center, you'll use your All-Access token to create device tokens
+and authenticate reads and writes.
+
 
 ### IoT Center: device registrations
 
@@ -100,9 +130,15 @@ In InfluxDB Cloud, use the `/api/v2/authorizations` InfluxDB API endpoint to vie
 You can't view API tokens in InfluxDB Cloud UI.
 {{% /note %}}
 
-#### Example: create an authorization
+#### Example: create a device authorization
 
-The following sample from IoT Center uses [`@influxdata/influxdb-client-apis`]() to create an authorization for an IoT device.
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+
+IoT Center server uses [`@influxdata/influxdb-client-apis`]() to create an authorization for an IoT device.
 
 ```js
 const {AuthorizationsAPI} = require('@influxdata/influxdb-client-apis')
@@ -145,6 +181,9 @@ async function createIoTAuthorization(deviceId) {
 }
 ```
 
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
+
 ### IoT Center: list registered devices
 
 To list registered devices, the [DevicesPage](https://github.com/bonitoo-io/iot-center-v2/blob/3118c6576ad7bccf0b84b63f95350bdaa159324e/app/ui/src/pages/DevicesPage.tsx) UI component sends a request to the IoT Center API `/api/devices` endpoint.
@@ -154,7 +193,15 @@ The IoT Center server app, in turn, sends a request to the `/api/v2/authorizatio
 
 The `getIoTAuthorizations()` IoT Center server function returns authorizations with the prefix "IoT Center: " and read-write access to the configured bucket.
 
-#### Example: list authorizations
+#### Example
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+
+IoT Center server retrieves authorizations from InfluxDB.
 
 ```js
 // Source: github/iot-center-v2/app/server/influxdb/authorizations.js
@@ -187,21 +234,34 @@ async function getIoTAuthorizations() {
   )
 }
 ```
+
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
+
 ### IoT Center: device details
 
-Device configuration details are composed of your InfluxDB configuration and authorization details for the device ID.
+IoT Center displays configuration details for a registered IoT device.
+IoT Center API composes device configuration from the device's authorization and your InfluxDB configuration properties.
+
+#### Example
+
+https://github.com/bonitoo-io/iot-center-v2/blob/10fd78e67ccf093dedbed9eed88439423203c8a2/app/server/apis/index.js#L58
 
 ### IoT Center: unregister a device
 
-To unregister a device, IoT Center deletes the device's authorization from your InfluxDB organization.
+To _unregister_ a device, IoT Center deletes the device authorization from your InfluxDB organization with the following steps:
 
 1. When you click the "Delete" button, IoT Center UI sends a `DELETE` request to the `/api/devices/DEVICE_ID` IoT Center API endpoint.
-2. IoT Center server retrieves the list of IoT Center authorizations and finds the authorization matching the device ID.
+2. IoT Center server retrieves the list of IoT Center authorizations and finds the authorization that matches the device ID.
 3. IoT Center sends a `DELETE` request to the `/api/v2/authorizations/AUTHORIZATION_ID` InfluxDB API endpoint.
 
 ## Write data to InfluxDB
 
-See [Write data with the API](/influxdb/v2.1/write-data/developer-tools/api/)
+{{% note %}}
+
+To learn more, see [Write data with the API](/influxdb/v2.1/write-data/developer-tools/api/)
+
+{{% /note %}}
 
 ### Batch writes with the Javascript client library
 
