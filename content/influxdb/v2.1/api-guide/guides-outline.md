@@ -51,9 +51,9 @@ You'll learn:
 To write to InfluxDB, your application or device must authenticate and have the required permissions.
 An InfluxDB **authorization** consists of an API token and a set of permissions to InfluxDB **resources**. Permissions allow the API token bearer, i.e. your application, to read and write resources in your **organization**.
 
-#### Example: get authorization details from InfluxDB
+#### Example: view authorization details
 
-An authorization from GET `/api/v2/authorizations`
+An authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint
 
 ```json
 {
@@ -85,6 +85,8 @@ An authorization from GET `/api/v2/authorizations`
    ]
  }
 ```
+
+{{% caption %}}An authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint{{% /caption %}}
 
 ### InfluxDB: create an All-Access token
 
