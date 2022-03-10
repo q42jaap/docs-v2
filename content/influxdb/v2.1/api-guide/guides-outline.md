@@ -3,22 +3,23 @@
 ## Introduction
 
 This guide is for developers who want to build Internet-of-Things (IoT) applications using the InfluxDB API.
-API client libraries maintained by InfluxDB and the user community enable developers to take
-advantage of common patterns in their language of choice and idiomatic handling
-of InfluxDB requests, responses, and errors.
+InfluxDB API client libraries are maintained by InfluxData and the user community. As a developer, client libraries enable you to take advantage of:
+- idioms for InfluxDB requests, responses, and errors
+- common patterns in a familiar programming language
+
 In this guide, you'll walk through the basics of using the InfluxDB API and
-client libraries in the
-context of building a real application.
-Along the way, we'll break down
-the architecture and flow of events between the IoT Center UI, server, and InfluxDB.
+client libraries in the context of building a real application as we
+deconstruct the flow of events and data between the app's user interface (IoT Center UI), the app's business layer (IoT Center Server), and InfluxDB.
 You'll see code samples that use InfluxDB API client libraries to
 manage IoT devices, write data to InfluxDB, query data from InfluxDB, create visualizations, and monitor the health of devices and the application itself.
 
 You'll learn:
-- the basics of InfluxDB and the REST API
+- InfluxDB core concepts
+- how to authenticate apps and devices to the API
 - how to install a client library
-- how to write data to influxDB
-- how to query data
+- how to write data to InfluxDB
+- how to query data in InfluxDB
+- how to generate visualizations from query results
 
 1. Setup InfluxDB
   - InfluxDB URL, Org, Bucket
