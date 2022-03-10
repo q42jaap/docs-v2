@@ -53,8 +53,6 @@ An InfluxDB **authorization** consists of an API token and a set of permissions 
 
 #### Example: view authorization details
 
-An authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint
-
 ```json
 {
    "id": "08e64ffe9b764000",
@@ -86,7 +84,7 @@ An authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint
  }
 ```
 
-{{% caption %}}An authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint{{% /caption %}}
+{{% caption %}}Authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint{{% /caption %}}
 
 ### InfluxDB: create an All-Access token
 
