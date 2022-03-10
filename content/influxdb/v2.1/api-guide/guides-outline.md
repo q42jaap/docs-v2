@@ -21,34 +21,37 @@ You'll learn:
 - how to query data in InfluxDB
 - how to generate visualizations from query results
 
-1. Setup InfluxDB
-  - InfluxDB URL, Org, Bucket
-  - [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
-1. Start with an API client (InfluxDB basics)
-   1. API basics
-   2. Create an API token
-   3. Create a bucket
-      1. Measurements, time series
-      2. Measurement schemas (aka bucket schemas)
-   1. Install a client library
-   4. Write data
-      1. Line protocol
-   5. Query InfluxDB
-      1. Flux
-   6. Aggregate and downsample your data
-1. IoT Dev Center
-   1. Architecture
-      - IoT Dev Center serves a modern React UI and a server-side API (/api/env/<deviceID>).
+## Contents
 
+1. Key concepts in InfluxDB
+    1. InfluxDB URL
+    2. resources
+    3. formats
+      - line protocol
+      - CSV
+      - JSON
+    - [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
+      1. API basics
+      2. Create an API token
+1. Start with an API client library
+1. Create a bucket
+  1. Measurements, time series
+  2. Measurement schemas (aka bucket schemas)
+1. Write data
+  1. Line protocol
+1. Query InfluxDB
+  1. Flux
+1. Aggregate and downsample your data
+1. Create data visualizations
 
 ## Authorization and authentication in InfluxDB
 
 To write to InfluxDB, your application or device must authenticate and have the required permissions.
-An InfluxDB **authorization** consists of a set of permissions and an API token. Permissions allow the API token bearer, i.e. your application, to read and write resources in your **organization**.
+An InfluxDB **authorization** consists of an API token and a set of permissions to InfluxDB **resources**. Permissions allow the API token bearer, i.e. your application, to read and write resources in your **organization**.
 
 #### Example: get authorization details from InfluxDB
 
-Authorization from [GET `/api/v2/authorizations`]()
+Authorization from GET `/api/v2/authorizations`
 
 ```json
 {
