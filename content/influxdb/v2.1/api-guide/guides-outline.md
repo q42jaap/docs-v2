@@ -24,16 +24,9 @@ You'll learn:
 
 ## Contents
 
-1. Key concepts in InfluxDB
-    1. InfluxDB URL
-    2. resources
-    3. formats
-      - line protocol
-      - CSV
-      - JSON
-    - [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
-        2. Create an API token
-        3. Use an API token
+- Key concepts in InfluxDB
+- [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
+
 1. Start with an API client library
 2. API basics
 1. Create a bucket
@@ -46,10 +39,55 @@ You'll learn:
   1. Aggregate and downsample your data
 1. Create data visualizations
 
+## Key concepts in InfluxDB
+
+1. InfluxDB URL
+2. resources
+3. formats
+  - line protocol
+  - CSV
+  - JSON
+
+### InfluxDB URL
+
+### Resources in InfluxDB
+
+**Resources** are InfluxDB objects that store data (.e.g. buckets) or configuration in InfluxDB.
+In this guide, you'll encounter the most commonly used InfluxDB resources:
+- Organization
+- User
+- Authorization
+- Buckets
+
+### Organization
+
+An **organization** in InfluxDB is a logical workspace for a group of users.
+Members, buckets, tasks, and dashboards (along with a number of other resources), belong to an organization.
+
+### User
+
+Users in InfluxDB are granted permission to access the database.
+Users are members of an **organization** and use **API tokens** to access resources.
+
+### Bucket
+
+Buckets in InfluxDB are named locations where time series data is stored.
+All buckets have a **retention policy***, a duration of time that each data point persists.
+All buckets belong to an **organization**.
+
+### Authorization
+
+An authorization in InfluxDB consists of an **API token** and a set of **permissions**
+that define the token's access to InfluxDB **resources**.
+InfluxDB uses API tokens to authenticate API requests.
+
 ## Authorization and authentication in InfluxDB
 
+- Create an API token
+- Use an API token
+
 To write to InfluxDB, your application or device must authenticate and have the required permissions.
-An InfluxDB **authorization** consists of an API token and a set of permissions to InfluxDB **resources**. Permissions allow the API token bearer, i.e. your application, to read and write resources in your **organization**.
+An InfluxDB **authorization** associates a unique **token** string with a set of **permissions** to InfluxDB **resources**. Permissions allow the token bearer, i.e. your application, to read and write resources in your **organization**.
 
 #### Example: view authorization details
 
@@ -86,7 +124,40 @@ An InfluxDB **authorization** consists of an API token and a set of permissions 
 
 {{% caption %}}Authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint{{% /caption %}}
 
+Given that each authorization can only have one token property, we refer to an
+authorization and its token value as an **API token**.
+
+{{% oss-only %}}
+
+  In InfluxDB OSS, API tokens have one of the following permissions scopes:
+
+  - _Operator_ tokens grant full read and write access to all resources in all organizations
+  - _All-Access_ tokens grant full read and write access to all resources in an organization
+  - _Read-Write_ tokens grant read or write access to specific resources in an organization
+
+  {{% note %}}
+
+  An _operator_ token is generated when you install InfluxDB.
+  If you've lost your _operator_ token, see [how to recover or replace it]().
+
+  {{% /note %}}
+
+{{% /oss-only %}}
+
+{{% cloud-only %}}
+
+  In InfluxDB Cloud, API tokens have one of the following permissions scopes:
+
+  - _All-Access_ tokens grant full read and write access to all resources in an organization
+  - _Read-Write_ tokens grant read or write access to specific resources in an organization
+
+{{% /cloud-only %}}
+
 ### InfluxDB: create an All-Access token
+
+Your application will need an API token with permission to query (_read_) your bucket
+and create (_write_) additional authorizations (or, API tokens,) for IoT devices.
+You can use an _all-access_ token for this.
 
 {{% note %}}
 
@@ -96,7 +167,26 @@ To learn more, see how to [create an authorization](/influxdb/v2.1/security/toke
 
 ### InfluxDB: use your token to authenticate API requests
 
-To authenticate InfluxDB API requests, your device passes the `Token` scheme and the API token in the `Authorization` request header.
+Once you set your InfluxDB configuration, the client libraries will insert your API token and provide the header to requests.
+To authenticate InfluxDB API requests, your application passes the
+API token with the `Token` scheme in the `Authorization` request header.
+
+#### Example: make a request with an API token
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+```js
+
+/** Set InfluxDB variables **/
+
+/** Make a request **/
+
+```
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
 
 {{% note %}}
 
@@ -108,7 +198,6 @@ To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/
 
 In IoT Center, you'll use your All-Access token to create device tokens
 and authenticate reads and writes.
-
 
 ### IoT Center: device registrations
 
