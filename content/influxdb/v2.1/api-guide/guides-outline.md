@@ -9,7 +9,7 @@ InfluxDB API client libraries are maintained by InfluxData and the user communit
 
 In this guide, you'll walk through the basics of using the InfluxDB API and
 client libraries in the context of building a real application as we
-deconstruct the flow of events and data between the app's user interface (IoT Center UI), the app's business layer (IoT Center server), and InfluxDB.
+deconstruct the flow of events and data between the app, devices, and InfluxDB.
 You'll see code samples that use InfluxDB API client libraries to
 manage IoT devices, write data to InfluxDB, query data from InfluxDB, create visualizations, and monitor the health of devices and the application itself.
 
@@ -157,7 +157,7 @@ authorization and its token value as an **API token**.
 
 Your application will need an API token with permission to query (_read_) your bucket
 and create (_write_) additional authorizations (or, API tokens,) for IoT devices.
-You can use an _all-access_ token for this.
+You can use an _All-Access_ token for this.
 
 {{% note %}}
 
@@ -194,7 +194,16 @@ To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/
 
 {{% /note %}}
 
-#### IoT Center: add your token
+### Introducing IoT Center
+
+Four main components of IoT Center architecture:
+
+**IoT Center UI**: IoT Center user interface renders views for the browser and sends requests to IoT Center server.
+**IoT Center server**: IoT Center server and API handles requests to, and responses from, InfluxDB.
+**InfluxDB API**: InfluxDB v2 API.
+**IoT device**: Virtual or physical devices write data to InfluxDB.
+
+### IoT Center: add your token
 
 In IoT Center, you'll use your All-Access token to create device tokens
 and authenticate reads and writes.
