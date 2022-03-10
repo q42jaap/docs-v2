@@ -367,7 +367,9 @@ To learn more, see [Write data with the API](/influxdb/v2.1/write-data/developer
 
 {{% /note %}}
 
-### Batch writes with the Javascript client library
+### Batch writes with client libraries
+
+#### Batch writes with the Javascript client library
 
 [influxdb-client-js](https://github.com/influxdata/influxdb-client-js/) provides features like batch writes, retries, and error handling necessary for production-ready applications.
 Batch writes reduce network use to make your application more efficient.
@@ -380,7 +382,7 @@ InfluxDB `/api/v2/write` endpoint.
 
 {{% api-endpoint method="POST" endpoint="/api/v2/write" %}}
 
-### IoT Center: batch writes for the virtual device
+### IoT Center: write device data to InfluxDB
 
 The IoT Center **virtual device** emulates a real IoT device by generating measurement data and writing the data to InfluxDB.
 Use the virtual device to demonstrate the IoT Center dashboard and test the InfluxDB API before you advance to adding physical devices or other clients.
@@ -410,6 +412,7 @@ in **DevicePage.tsx**. `writeEmulatedData(...)` takes the following steps to wri
 5. Calls the [`writeApi.flush()`]() client library function.
 6. Internally, `writeApi.flush()` calls the `writeApi.sendBatch()`](https://github.com/influxdata/influxdb-client-js/blob/d76b1fe8c4000d7614f44d696c964cc4492826c6/packages/core/src/impl/WriteApiImpl.ts#L147)
    client library function to write the points in batches to the `/api/v2/write` InfluxDB API endpoint.
+
 
 #### Example: batch and write points
 
