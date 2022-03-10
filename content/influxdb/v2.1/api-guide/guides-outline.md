@@ -197,11 +197,11 @@ To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/
 ### Introducing IoT Center
 
 Four main components of IoT Center architecture:
-
-**IoT Center UI**: IoT Center user interface renders views for the browser and sends requests to IoT Center server.
-**IoT Center server**: IoT Center server and API handles requests to, and responses from, InfluxDB.
-**InfluxDB API**: InfluxDB v2 API.
-**IoT device**: Virtual or physical devices write data to InfluxDB.
+- **InfluxDB API**: InfluxDB v2 API.
+- **IoT device**: Virtual or physical devices write data to the InfluxDB API.
+- **IoT Center UI**: User interface sends requests to IoT Center server and renders views for the browser.
+- **IoT Center server**: Server and API receives requests from the UI, sends requests to InfluxDB,
+  and processes responses from InfluxDB.
 
 ### IoT Center: add your token
 
