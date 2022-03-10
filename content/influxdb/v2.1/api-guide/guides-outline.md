@@ -9,7 +9,7 @@ InfluxDB API client libraries are maintained by InfluxData and the user communit
 
 In this guide, you'll walk through the basics of using the InfluxDB API and
 client libraries in the context of building a real application as we
-deconstruct the flow of events and data between the app's user interface (IoT Center UI), the app's business layer (IoT Center Server), and InfluxDB.
+deconstruct the flow of events and data between the app's user interface (IoT Center UI), the app's business layer (IoT Center server), and InfluxDB.
 You'll see code samples that use InfluxDB API client libraries to
 manage IoT devices, write data to InfluxDB, query data from InfluxDB, create visualizations, and monitor the health of devices and the application itself.
 
@@ -17,6 +17,7 @@ You'll learn:
 - InfluxDB core concepts
 - how to authenticate apps and devices to the API
 - how to install a client library
+- how to install the IoT Center app
 - how to write data to InfluxDB
 - how to query data in InfluxDB
 - how to generate visualizations from query results
@@ -31,9 +32,10 @@ You'll learn:
       - CSV
       - JSON
     - [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
-      1. API basics
-      2. Create an API token
+        2. Create an API token
+        3. Use an API token
 1. Start with an API client library
+2. API basics
 1. Create a bucket
   1. Measurements, time series
   2. Measurement schemas (aka bucket schemas)
@@ -41,7 +43,7 @@ You'll learn:
   1. Line protocol
 1. Query InfluxDB
   1. Flux
-1. Aggregate and downsample your data
+  1. Aggregate and downsample your data
 1. Create data visualizations
 
 ## Authorization and authentication in InfluxDB
@@ -51,7 +53,7 @@ An InfluxDB **authorization** consists of an API token and a set of permissions 
 
 #### Example: get authorization details from InfluxDB
 
-Authorization from GET `/api/v2/authorizations`
+An authorization from GET `/api/v2/authorizations`
 
 ```json
 {
