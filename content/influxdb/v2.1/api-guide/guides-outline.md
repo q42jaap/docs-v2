@@ -104,7 +104,8 @@ may have one of the following formats, depending on the endpoint and response st
 
 ### Resources in InfluxDB
 
-**Resources** are InfluxDB objects that store data (.e.g. buckets) or configuration in InfluxDB.
+**Resources** are InfluxDB objects that store data (.e.g. buckets) or configuration (.e.g. tasks) in InfluxDB.
+You can use the InfluxDB API to create, retrieve, update, and delete resources.
 In this guide, you'll encounter the following commonly used InfluxDB resources:
 
 - [Organization](#organization)
@@ -184,7 +185,7 @@ An InfluxDB **authorization** associates a unique **token** string with a set of
  }
 ```
 
-{{% caption %}}Response body from GET `/api/v2/authorizations/AUTHORIZATION_ID` InfluxDB API endpoint{{% /caption %}}
+{{% caption %}}Response body from the GET `/api/v2/authorizations/AUTHORIZATION_ID` InfluxDB API endpoint{{% /caption %}}
 
 Given that each authorization can only have one `token`, we often use the term "API token"
 when referring to an authorization or its token value.
@@ -297,11 +298,13 @@ IoT Center uses the constant `DESC_PREFIX` (`= "IoT Center: "`) to identify and 
 4. You configure your device to use the authorization's API token to authenticate to InfluxDB.
 
 {{% note %}}
+
 In InfluxDB Cloud, use the `/api/v2/authorizations` InfluxDB API endpoint to view the API token for your device.
 
 {{% api-endpoint method="GET" endpoint="/api/v2/authorizations" %}}
 
 You can't view API tokens in InfluxDB Cloud UI.
+
 {{% /note %}}
 
 #### Example: create a device authorization
