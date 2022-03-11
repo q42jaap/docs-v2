@@ -65,13 +65,14 @@ http://localhost:8086/api/v2/write
 ```
 
 {{% oss-only %}}
-In InfluxDB OSS, some system information endpoints are in the `/` root URL path,
-e.g.
 
-```sh
-http://localhost:8086/debug/pprof
-http://localhost:8086/metrics
-```
+  In InfluxDB OSS, some system information endpoints are in the `/` root URL path,
+  e.g.
+
+  ```sh
+  http://localhost:8086/debug/pprof
+  http://localhost:8086/metrics
+  ```
 
 {{% /oss-only %}}
 
