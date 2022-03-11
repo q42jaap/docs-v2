@@ -105,7 +105,7 @@ may have one of the following formats, depending on the endpoint and response st
 ### Resources in InfluxDB
 
 **Resources** are InfluxDB objects that store data (.e.g. buckets) or configuration (.e.g. tasks) in InfluxDB.
-You can use the InfluxDB API to create, retrieve, update, and delete resources.
+Your application uses the InfluxDB API to create, retrieve, update, and delete resources.
 In this guide, you'll encounter the following commonly used InfluxDB resources:
 
 - [Organization](#organization)
@@ -149,7 +149,7 @@ To learn more about InfluxDB data elements, schemas, and design principles, see 
 - Create an API token
 - Use an API token
 
-To write to InfluxDB, your application or device must authenticate and have the required permissions.
+To use the InfluxDB API, your application or device must authenticate and have the required permissions.
 An InfluxDB **authorization** associates a unique **token** string with a set of **permissions** to InfluxDB **resources**. Permissions allow the token bearer, i.e. your application, to read and write resources in your **organization**.
 
 #### Example: InfluxDB authorization
