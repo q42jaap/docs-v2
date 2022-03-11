@@ -23,7 +23,7 @@ You'll learn:
 - how to generate visualizations from query results
 
 ## Contents
-
+1. [Setup InfluxDB](#setup-influxdb)
 1. [InfluxDB API basics](#influxdb-api-basics)
 1. [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
 1. Start with an API client library
@@ -37,6 +37,10 @@ You'll learn:
   1. Aggregate and downsample your data
 1. Create data visualizations
 
+## Setup InfluxDB
+
+To start, [create an InfluxDB Cloud account or install InfluxDB OSS]().
+
 ## InfluxDB API basics
 
 - [InfluxDB URL](#influxdb-url)
@@ -45,6 +49,31 @@ You'll learn:
 - [Resources in InfluxDB](#resources-in-influxdb)
 
 ### InfluxDB URL
+
+Throughout this guide, your application will send API requests to your InfluxDB URL.
+
+```sh
+http://localhost:8086
+```
+
+Most InfluxDB API operations you'll use in this guide are in the `/api/v2` URL path,
+e.g.
+
+```sh
+http://localhost:8086/api/v2/query
+http://localhost:8086/api/v2/write
+```
+
+{{% oss-only %}}
+In InfluxDB OSS, some system information endpoints are in the `/` root URL path,
+e.g.
+
+```sh
+http://localhost:8086/debug/pprof
+http://localhost:8086/metrics
+```
+
+{{% /oss-only %}}
 
 See how to find your URL.
 
