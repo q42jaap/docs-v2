@@ -52,15 +52,15 @@ See how to find your URL.
 
 #### Line protocol
 
-Line protocol is the data format that you use write to InfluxDB.
+You use the line protocol format to write data to InfluxDB.
 
 #### CSV
 
-InfluxDB returns query results in CSV format.
+The InfluxDB API returns query results in CSV format.
 
 #### JSON
 
-Most InfluxDB API responses that return a body, return the body in JSON format.
+The InfluxDB API returns resources and errors in JSON format.
 
 ### Responses
 
@@ -68,7 +68,7 @@ The InfluxDB API is a REST API that accepts standard HTTP request verbs
 and returns standard HTTP response codes. If InfluxDB sends a response body, the body
 may have one of the following formats, depending on the endpoint and response status:
 
-- JSON: responses with resources or error messages.
+- JSON: responses with resources or error messages
 - CSV: responses with query results.
 - Plain text: some error responses, responses with system information
 
