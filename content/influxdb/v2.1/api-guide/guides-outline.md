@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide is for developers who want to build Internet-of-Things (IoT) applications using the InfluxDB API.
+This guide is for developers who want to build Internet-of-Things (IoT) applications using the InfluxDB API and client libraries.
 InfluxDB API client libraries are maintained by InfluxData and the user community. As a developer, client libraries enable you to take advantage of:
 - idioms for InfluxDB requests, responses, and errors
 - common patterns in a familiar programming language
@@ -24,62 +24,94 @@ You'll learn:
 
 ## Contents
 
-- Key concepts in InfluxDB
-- [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
-
+1. [InfluxDB API basics](#influxdb-api-basics)
+1. [Authorization and authentication in InfluxDB](#authorization-and-authentication-in-influxdb)
 1. Start with an API client library
-2. API basics
 1. Create a bucket
   1. Measurements, time series
   2. Measurement schemas (aka bucket schemas)
-1. Write data
-  1. Line protocol
-1. Query InfluxDB
-  1. Flux
+1. [Write data to InfluxDB](#write-data-to-influxdb)
+  1. Write line protocol
+1. [Query InfluxDB](#query-influxdb)
+  1. Send a Flux query
   1. Aggregate and downsample your data
 1. Create data visualizations
 
-## Key concepts in InfluxDB
+## InfluxDB API basics
 
-1. InfluxDB URL
-2. resources
-3. formats
-  - line protocol
-  - CSV
-  - JSON
+- [InfluxDB URL](#influxdb-url)
+- [Data formats](#data-formats)
+- [Responses](#responses)
+- [Resources in InfluxDB](#resources-in-influxdb)
 
 ### InfluxDB URL
+
+See how to find your URL.
+
+### Data formats
+
+#### Line protocol
+
+Line protocol is the data format that you use write to InfluxDB.
+
+#### CSV
+
+InfluxDB returns query results in CSV format.
+
+#### JSON
+
+Most InfluxDB API responses that return a body, return the body in JSON format.
+
+### Responses
+
+The InfluxDB API is a REST API that accepts standard HTTP request verbs
+and returns standard HTTP response codes. If InfluxDB sends a response body, the body
+may have one of the following formats, depending on the endpoint and response status:
+
+- JSON
+- CSV
+- Plain text
 
 ### Resources in InfluxDB
 
 **Resources** are InfluxDB objects that store data (.e.g. buckets) or configuration in InfluxDB.
-In this guide, you'll encounter the most commonly used InfluxDB resources:
-- Organization
-- User
-- Authorization
-- Buckets
+In this guide, you'll encounter the following commonly used InfluxDB resources:
 
-### Organization
+- [Organization](#organization)
+- [User](#user)
+- [Authorization](#authorization)
+- [Bucket](#bucket)
+
+#### Organization
 
 An **organization** in InfluxDB is a logical workspace for a group of users.
 Members, buckets, tasks, and dashboards (along with a number of other resources), belong to an organization.
 
-### User
+See how to find your organization.
+
+#### User
 
 Users in InfluxDB are granted permission to access the database.
 Users are members of an **organization** and use **API tokens** to access resources.
 
-### Bucket
+#### Bucket
 
 Buckets in InfluxDB are named locations where time series data is stored.
 All buckets have a **retention policy***, a duration of time that each data point persists.
 All buckets belong to an **organization**.
 
-### Authorization
+#### Authorization
 
 An authorization in InfluxDB consists of an **API token** and a set of **permissions**
 that define the token's access to InfluxDB **resources**.
 InfluxDB uses API tokens to authenticate API requests.
+
+{{% note %}}
+
+To learn more about InfluxDB data elements, schemas, and design principles, see the
+[Key concepts reference topics](influxdb/v2.1/reference/key-concepts/).
+
+{{% /note %}}
 
 ## Authorization and authentication in InfluxDB
 
@@ -89,7 +121,7 @@ InfluxDB uses API tokens to authenticate API requests.
 To write to InfluxDB, your application or device must authenticate and have the required permissions.
 An InfluxDB **authorization** associates a unique **token** string with a set of **permissions** to InfluxDB **resources**. Permissions allow the token bearer, i.e. your application, to read and write resources in your **organization**.
 
-#### Example: view authorization details
+#### Example: InfluxDB authorization
 
 ```json
 {
@@ -122,18 +154,18 @@ An InfluxDB **authorization** associates a unique **token** string with a set of
  }
 ```
 
-{{% caption %}}Authorization from the GET `/api/v2/authorizations` InfluxDB API endpoint{{% /caption %}}
+{{% caption %}}Response body from GET `/api/v2/authorizations/AUTHORIZATION_ID` InfluxDB API endpoint{{% /caption %}}
 
-Given that each authorization can only have one token property, we refer to an
-authorization and its token value as an **API token**.
+Given that each authorization can only have one `token`, we often use the term "API token"
+when referring to an authorization or its token value.
 
 {{% oss-only %}}
 
   In InfluxDB OSS, API tokens have one of the following permissions scopes:
 
-  - _Operator_ tokens grant full read and write access to all resources in all organizations
-  - _All-Access_ tokens grant full read and write access to all resources in an organization
-  - _Read-Write_ tokens grant read or write access to specific resources in an organization
+  - _Operator_ token grants full read and write access to all resources in all organizations
+  - _All-Access_ token grants full read and write access to all resources in an organization
+  - _Read-Write_ token grants read or write access to specific resources in an organization
 
   {{% note %}}
 
@@ -148,8 +180,8 @@ authorization and its token value as an **API token**.
 
   In InfluxDB Cloud, API tokens have one of the following permissions scopes:
 
-  - _All-Access_ tokens grant full read and write access to all resources in an organization
-  - _Read-Write_ tokens grant read or write access to specific resources in an organization
+  - _All-Access_ token grants full read and write access to all resources in an organization
+  - _Read-Write_ token grants read or write access to specific resources in an organization
 
 {{% /cloud-only %}}
 
@@ -157,7 +189,11 @@ authorization and its token value as an **API token**.
 
 Your application will need an API token with permission to query (_read_) your bucket
 and create (_write_) additional authorizations (or, API tokens,) for IoT devices.
-You can use an _All-Access_ token for this.
+Here, you'll create an _All-Access_ token for the application.
+For a production application, we recommend you create a token with minimal permissions
+and only use it in that application.
+
+To create an _All-Access_ token, you can use the InfluxDB UI, CLI, or API.
 
 {{% note %}}
 
@@ -196,12 +232,16 @@ To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/
 
 ### Introducing IoT Center
 
-Four main components of IoT Center architecture:
+Our IoT Center architecture has four layers:
 - **InfluxDB API**: InfluxDB v2 API.
-- **IoT device**: Virtual or physical devices write data to the InfluxDB API.
+- **IoT device**: Virtual or physical devices write IoT data to the InfluxDB API.
 - **IoT Center UI**: User interface sends requests to IoT Center server and renders views for the browser.
 - **IoT Center server**: Server and API receives requests from the UI, sends requests to InfluxDB,
   and processes responses from InfluxDB.
+
+### IoT Center: setup
+
+
 
 ### IoT Center: add your token
 
@@ -246,26 +286,24 @@ IoT Center server uses [`@influxdata/influxdb-client-apis`]() to create an autho
 
 ```js
 const {AuthorizationsAPI} = require('@influxdata/influxdb-client-apis')
+const influxdb = require('./influxdb')
 const {getOrganization} = require('./organizations')
 const {getBucket} = require('./buckets')
+const {INFLUX_BUCKET} = require('../env')
+
 const authorizationsAPI = new AuthorizationsAPI(influxdb)
-const DESC_PREFIX = 'IoT Center: '
-const CREATE_BUCKET_SPECIFIC_AUTHORIZATIONS = false
+const DESC_PREFIX = 'IoTCenterDevice: '
+
+/** Other authorization functions **/
 
 /**
  * Creates authorization for a supplied deviceId
  * @param {string} deviceId client identifier
- * @return {import('@influxdata/influxdb-client-apis').Authorization} promise with authorization or an error
+ * @returns {import('@influxdata/influxdb-client-apis').Authorization} promise with authorization or an error
  */
 async function createIoTAuthorization(deviceId) {
   const {id: orgID} = await getOrganization()
-  let bucketID = undefined
-  if (CREATE_BUCKET_SPECIFIC_AUTHORIZATIONS) {
-    bucketID = await getBucket(INFLUX_BUCKET).id
-  }
-  console.log(
-    `createIoTAuthorization: deviceId=${deviceId} orgID=${orgID} bucketID=${bucketID}`
-  )
+  const bucketID = await getBucket(INFLUX_BUCKET).id
   return await authorizationsAPI.postAuthorizations({
     body: {
       orgID,
@@ -287,6 +325,8 @@ async function createIoTAuthorization(deviceId) {
 
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
+
+{{% caption %}} IoT Center [/app/server/influxdb/authorizations.js](https://github.com/bonitoo-io/iot-center-v2/blob/b3bfce7ee9f5f045cfc8d881a9819f5dd9ad7a35/app/server/influxdb/authorizations.js#L61){{% /caption %}}
 
 ### IoT Center: list registered devices
 
