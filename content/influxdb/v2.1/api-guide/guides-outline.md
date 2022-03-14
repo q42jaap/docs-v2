@@ -707,11 +707,10 @@ export interface Table {
 }
 ```
 
+## Advanced topics
 
-
-   ## Advanced topics
-     1. Segment your data
-     1. Optimize your queries
+1. Segment your data
+1. Optimize your queries
 1. Manage and secure tokens
    1. InfluxDB Cloud (token access restrictions)
 2. Monitor the IoT app
