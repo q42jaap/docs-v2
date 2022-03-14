@@ -234,9 +234,8 @@ To learn more, see how to [create an authorization](/influxdb/v2.1/security/toke
 
 ### InfluxDB: use your token to authenticate API requests
 
-Once you set your InfluxDB configuration, the client libraries will insert your API token and provide the header to requests.
-To authenticate InfluxDB API requests, your application passes the
-API token with the `Token` scheme in the `Authorization` request header.
+To authenticate InfluxDB API requests, client libraries pass your `INFLUXDB_TOKEN` environment variable in your requests. All `/api/v2` InfluxDB API requests must pass the API token with the `Token` scheme in the `Authorization` request header.
+
 
 #### Example: make a request with an API token
 
