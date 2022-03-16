@@ -166,25 +166,19 @@ To learn more about InfluxDB data elements, schemas, and design principles, see 
 
 {{% /note %}}
 
-### Introducing IoT Center
-
-The IoT Center architecture has four layers:
-
-- **InfluxDB API**: InfluxDB v2 API.
-- **IoT device**: Virtual or physical devices write IoT data to the InfluxDB API.
-- **IoT Center UI**: User interface sends requests to IoT Center server and renders views for the browser.
-- **IoT Center server**: Server and API receives requests from the UI, sends requests to InfluxDB,
-  and processes responses from InfluxDB.
-
 ## Install IoT Center
 
-Use `git` to clone the IoT Center repository to your machine.
+1. Use `git` to clone the IoT Center repository to your machine.
 
-`git clone git@github.com:bonitoo-io/iot-center-v2.git`
+  `git clone git@github.com:bonitoo-io/iot-center-v2.git`
+
+2. Use `npm install` (included with Node.JS) or `yarn install` to install dependencies for IoT Center.
+
+   'npm install'
 
 ## Install InfluxDB
 
-If you don't already have an InfluxDB instance, [create an InfluxDB Cloud account or install InfluxDB OSS]().
+If you don't already have an InfluxDB instance, [create an InfluxDB Cloud account](https://www.influxdata.com/products/influxdb-cloud/) or [install InfluxDB OSS](https://www.influxdata.com/products/influxdb/).
 
 ## Setup InfluxDB
 
@@ -265,7 +259,15 @@ Use the All-Access token you created in [Add an InfluxDB All-Access token](#add-
 
 ### Add your InfluxDB organization
 
+### Introducing IoT Center
 
+The IoT Center architecture has four layers:
+
+- **InfluxDB API**: InfluxDB v2 API.
+- **IoT device**: Virtual or physical devices write IoT data to the InfluxDB API.
+- **IoT Center UI**: User interface sends requests to IoT Center server and renders views for the browser.
+- **IoT Center server**: Server and API receives requests from the UI, sends requests to InfluxDB,
+  and processes responses from InfluxDB.
 
 ### IoT Center: register and list IoT devices
 
@@ -452,7 +454,7 @@ in **DevicePage.tsx**. `writeEmulatedData(...)` takes the following steps to wri
    ```js
    const influxDB = new InfluxDB({url, token})
    ```
-2. To configure the client for writing, calls `getWriteApi()` with organization, bucket, timestamp precision, batch size, and default tags
+2. To configure the client for writing, calls the `getWriteApi()`  with organization, bucket, timestamp precision, batch size, and default tags
    ```js
    const writeApi = influxDB.getWriteApi(org, bucket, 'ns', {
      batchSize: batchSize + 1,
