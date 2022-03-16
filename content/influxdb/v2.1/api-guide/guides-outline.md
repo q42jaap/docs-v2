@@ -78,7 +78,7 @@ The InfluxDB API returns resources and errors in JSON format.
 
 The InfluxDB API is a REST API that accepts standard HTTP request verbs
 and returns standard HTTP response codes. If InfluxDB sends a response body, the body
-may have one of the following formats, depending on the endpoint and response status:
+will have one of the following formats, depending on the endpoint and response status:
 
 - JSON: responses with resources or error messages
 - CSV: responses with query results.
@@ -178,7 +178,9 @@ The IoT Center architecture has four layers:
 
 ## Install IoT Center
 
+Use `git` to clone the IoT Center repository to your machine.
 
+`git clone git@github.com:bonitoo-io/iot-center-v2.git`
 
 ## Install InfluxDB
 
@@ -199,6 +201,62 @@ For a production application, we recommend you create a token with minimal permi
 
 {{% /note %}}
 
+## Send an API request
+
+Now that you have InfluxDB, an API token, and a client library (with `iot-center-v2`), use the client library to
+send a request to the InfluxDB API.
+
+#### Example: list API endpoints
+
+Use a client library to retrieve a list of InfluxDB API endpoints.
+
+{{% api-endpoint method="GET" endpoint="http://localhost:8086/api/v2"%}}
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+
+1. Copy the example below and replace the INFLUX_URL and INFLUX_TOKEN values with your own.
+
+```js
+
+#!/usr/bin/env node
+
+const { InfluxDB } = require('@influxdata/influxdb-client')
+const { RootAPI } = require('@influxdata/influxdb-client-apis')
+
+const INFLUX_URL='http://192.168.1.2:8086'
+const INFLUX_TOKEN='29Ye1KH9VkASPR2DSfRfFd82OwGD-5HWkBj0Ju_m-DTgT4PHakgweD3p87mp45Y633njDllKkD5wVc0zMCVhIw=='
+
+const influxdb = new InfluxDB({url: INFLUX_URL, token: INFLUX_TOKEN})
+const rootAPI = new RootAPI(influxdb)
+
+rootAPI.getRoutes().then(routes => console.log(routes))
+
+```
+
+2. From your `iot-center-v2` directory, launch the `node` REPL.
+
+```sh
+
+node
+
+```
+
+3. At the prompt, paste the example code and press `Enter`.
+
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
+
+{{% note %}}
+
+To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/use-tokens/).
+
+{{% /note %}}
+
+
 ## Configure IoT Center
 
 env.js
@@ -213,33 +271,6 @@ Use the All-Access token you created in [Add an InfluxDB All-Access token](#add-
 
 ### Add your InfluxDB organization
 
-## Make an API request
-
-Now that you have an InfluxDB environment setup and a client library installed,
-make a test request to the InfluxDB API.
-
-#### Example: make a request with an API token
-
-{{< code-tabs-wrapper >}}
-{{% code-tabs %}}
-[Node.js](#nodejs)
-{{% /code-tabs %}}
-{{% code-tab-content %}}
-```js
-
-/** Set InfluxDB variables **/
-
-/** Make a request **/
-
-```
-{{% /code-tab-content %}}
-{{< /code-tabs-wrapper >}}
-
-{{% note %}}
-
-To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/use-tokens/).
-
-{{% /note %}}
 
 
 ### IoT Center: register and list IoT devices
