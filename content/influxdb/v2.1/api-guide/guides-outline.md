@@ -250,12 +250,6 @@ node
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-{{% note %}}
-
-To learn more, see how to [use an authorization](/influxdb/v2.1/security/tokens/use-tokens/).
-
-{{% /note %}}
-
 
 ## Configure IoT Center
 
