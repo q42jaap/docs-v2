@@ -349,7 +349,12 @@ async function createIoTAuthorization(deviceId) {
 To list registered devices, the IoT Center UI [DevicesPage](https://github.com/bonitoo-io/iot-center-v2/blob/3118c6576ad7bccf0b84b63f95350bdaa159324e/app/ui/src/pages/DevicesPage.tsx) component sends a request to the `/api/devices` IoT Center server endpoint.
 {{/* Source: https://github.com/bonitoo-io/iot-center-v2/blob/3118c6576ad7bccf0b84b63f95350bdaa159324e/app/ui/src/pages/DevicesPage.tsx */}}
 
-When IoT Center server receives the request, it sends a Flux query in a request to the `/api/v2/query` InfluxDB API endpoint. The query returns points with the `deviceauth` measurement from your `INFLUX_BUCKET_AUTH` bucket.
+When IoT Center server receives the request, the server calls the [`getDevices()`](ttps://github.com/bonitoo-io/iot-center-v2/blob/f5b4a0b663e2e14bcd4f6fddb35cab2de216e6b6/app/server/influxdb/devices.js#L16) function.
+`getDevices()` does the following:
+1. Instantiates a query client from the InfluxDB client library.
+2. Builds a Flux query to retrieve all points with the `deviceauth` measurement from
+   the `INFLUX_BUCKET_AUTH` bucket.
+3. Returns a `Promise` that sends the query to the `/api/v2/query` InfluxDB API endpoint and iterates over devices in the response.
 
 #### Example
 
@@ -359,10 +364,15 @@ When IoT Center server receives the request, it sends a Flux query in a request 
 {{% /code-tabs %}}
 {{% code-tab-content %}}
 
-IoT Center server queries devices in InfluxDB.
+Flux query for devices in InfluxDB.
+The query doesn't return device API tokens unless a device ID is specified.
 
 ```js
 
+const deviceFilter =
+  deviceId !== undefined
+    ? flux` and r.deviceId == "${deviceId}"`
+    : flux` and r._field != "token"`
 const fluxQuery = flux`from(bucket:${INFLUX_BUCKET_AUTH})
   |> range(start: 0)
   |> filter(fn: (r) => r._measurement == "deviceauth"${deviceFilter})
@@ -373,7 +383,7 @@ const fluxQuery = flux`from(bucket:${INFLUX_BUCKET_AUTH})
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-{{% caption %}} [/app/server/influxdb/devices.js line 22](https://github.com/bonitoo-io/iot-center-v2/blob/f5b4a0b663e2e14bcd4f6fddb35cab2de216e6b6/app/server/influxdb/devices.js#L22){{% /caption %}}
+{{% caption %}}[/app/server/influxdb/devices.js line 18](https://github.com/bonitoo-io/iot-center-v2/blob/f5b4a0b663e2e14bcd4f6fddb35cab2de216e6b6/app/server/influxdb/devices.js#L18){{% /caption %}}
 
 ### IoT Center: device details
 
