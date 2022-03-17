@@ -197,7 +197,7 @@ For a production application, we recommend you create a token with minimal permi
 
 ## Send an API request
 
-Now that you have InfluxDB, an API token, and a client library (with `iot-center-v2`), use the client library to
+Now that you have InfluxDB, an API token, and the Node.JS client library (with `iot-center-v2`), use the client library to
 send a request to the InfluxDB API.
 
 #### Example: list API endpoints
@@ -239,7 +239,7 @@ node
 
 ```
 
-3. At the prompt, paste the example code and press `Enter`.
+3. At the prompt, paste the example code (from _Step 1_) and press `Enter`.
 
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
@@ -346,12 +346,10 @@ async function createIoTAuthorization(deviceId) {
 
 ### IoT Center: list registered devices
 
-To list registered devices, the [DevicesPage](https://github.com/bonitoo-io/iot-center-v2/blob/3118c6576ad7bccf0b84b63f95350bdaa159324e/app/ui/src/pages/DevicesPage.tsx) UI component sends a request to the IoT Center API `/api/devices` endpoint.
+To list registered devices, the IoT Center UI [DevicesPage](https://github.com/bonitoo-io/iot-center-v2/blob/3118c6576ad7bccf0b84b63f95350bdaa159324e/app/ui/src/pages/DevicesPage.tsx) component sends a request to the `/api/devices` IoT Center server endpoint.
 {{/* Source: https://github.com/bonitoo-io/iot-center-v2/blob/3118c6576ad7bccf0b84b63f95350bdaa159324e/app/ui/src/pages/DevicesPage.tsx */}}
 
-The IoT Center server app, in turn, sends a request to the `/api/v2/authorizations` InfluxDB API endpoint to retrieve authorizations.
-
-The `getIoTAuthorizations()` IoT Center server function returns authorizations with the prefix "IoT Center: " and read-write access to the configured bucket.
+When IoT Center server receives the request, it sends a Flux query in a request to the `/api/v2/query` InfluxDB API endpoint. The query returns points with the `deviceauth` measurement from your `INFLUX_BUCKET_AUTH` bucket.
 
 #### Example
 
@@ -361,42 +359,21 @@ The `getIoTAuthorizations()` IoT Center server function returns authorizations w
 {{% /code-tabs %}}
 {{% code-tab-content %}}
 
-IoT Center server retrieves authorizations from InfluxDB.
+IoT Center server queries devices in InfluxDB.
 
 ```js
-// Source: github/iot-center-v2/app/server/influxdb/authorizations.js
 
-/**
- * Gets all authorizations.
- * @return promise with an array of authorizations
- * @see https://influxdata.github.io/influxdb-client-js/influxdb-client-apis.authorization.html
- * @return {Array<import('@influxdata/influxdb-client-apis').Authorization>}
- */
-async function getAuthorizations() {
-  const {id: orgID} = await getOrganization()
-  const authorizations = await authorizationsAPI.getAuthorizations({orgID})
-  return authorizations.authorizations || []
-}
+const fluxQuery = flux`from(bucket:${INFLUX_BUCKET_AUTH})
+  |> range(start: 0)
+  |> filter(fn: (r) => r._measurement == "deviceauth"${deviceFilter})
+  |> last()`
 
-/**
- * Gets all IoT Center device authorizations.
- * @return promise with an authorization or undefined
- * @see https://influxdata.github.io/influxdb-client-js/influxdb-client-apis.authorization.html
- * @return {Array<import('@influxdata/influxdb-client-apis').Authorization>}
- */
-async function getIoTAuthorizations() {
-  const authorizations = await getAuthorizations()
-  const {id: bucketId} = await getBucket()
-  return authorizations.filter(
-    (val) =>
-      val.description.startsWith(DESC_PREFIX) &&
-      isBucketRWAuthorized(val, bucketId)
-  )
-}
 ```
 
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
+
+{{% caption %}} [/app/server/influxdb/devices.js line 22](https://github.com/bonitoo-io/iot-center-v2/blob/f5b4a0b663e2e14bcd4f6fddb35cab2de216e6b6/app/server/influxdb/devices.js#L22){{% /caption %}}
 
 ### IoT Center: device details
 
