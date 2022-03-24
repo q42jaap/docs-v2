@@ -1,4 +1,4 @@
-import { getDevices } from './_devices'
+import { getDevices } from './devices/_devices'
 
 import influxdb from '../_influxdb'
 import { AuthorizationsAPI, BucketsAPI } from '@influxdata/influxdb-client-apis'
@@ -75,3 +75,4 @@ async function createDevice(deviceId) {
       },
     })
   }
+  
