@@ -1,66 +1,34 @@
 
-## Why NextJS?
 
-## Bootstrap a new app from the NextJS **learn-starter** template.
+## Create your app
+
+[Next.js](https://nextjs.org/) provides a framework and tools to help you quickly build a full-stack JavaScript application with production-level features and minimal setup.
+
+To begin, use `npx` to create the `nextjs-iot-starter` app from the from the NextJS [learn-starter template](https://github.com/vercel/next-learn/tree/master/basics/learn-starter).
 
 ```sh
-github % npx create-next-app nextjs-iot-starter --use-npm --example "https://github.com/vercel/next-learn/tree/master/basics/learn-starter"
+npx create-next-app nextjs-iot-starter --use-npm --example "https://github.com/vercel/next-learn/tree/master/basics/learn-starter"
 ```
 
-`npx` installs required packages.
+After the installation completes, go into your `nextjs-iot-starter` directory and start the development server.
 
 ```sh
-Need to install the following packages:
-  create-next-app
-Ok to proceed? (y) y
-Creating a new Next.js app in /Users/me/github/nextjs-iot-starter.
-
-Downloading files from repo https://github.com/vercel/next-learn/tree/master/basics/learn-starter. This might take a moment.
-
-...
-
-Success! Created nextjs-iot-starter at /Users/me/github/nextjs-iot-starter
-Inside that directory, you can run several commands:
-
-  npm run dev
-    Starts the development server.
-
-  npm run build
-    Builds the app for production.
-
-  npm start
-    Runs the built app in production mode.
-
-We suggest that you begin by typing:
-
-  cd nextjs-iot-starter
-  npm run dev
-
-```
-
-Start the development server for your nextjs-iot-starter app.
-
-```sh
-
 cd nextjs-iot-starter
-```
-
-Verify it runs.
-
-```sh
 npm run dev
 ```
 
-Visit http://localhost:3000 in your browser.
+To verify you can access the app, visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Install InfluxDB client library
 
-Install `@influxdata/influxdb-client` for the following write and query API features:
+If you haven't already, [create your app](#create-your-app).
 
-- Query data with the Flux language
-- Write data to InfluxDB
-- batch data in the background
-- retry automatically on failure
+From your app directory, install `@influxdata/influxdb-client` for the following write and query API features:
+
+- Query data with the Flux language.
+- Write data to InfluxDB.
+- Batch data in the background.
+- Retry requests automatically on failure.
 
 ```sh
 npm i @influxdata/influxdb-client
@@ -68,13 +36,28 @@ npm i @influxdata/influxdb-client
 
 ## Install InfluxDB client library for management APIs
 
-Install `@influxdata/influxdb-client-apis` to create, modify, and delete buckets, tasks, authorizations, and other InfluxDB resources.
+From your app directory, install `@influxdata/influxdb-client-apis` to create, modify, and delete buckets, tasks, authorizations, and other InfluxDB resources.
 
 ```sh
 npm i @influxdata/influxdb-client-apis
 ```
 
 ## Set InfluxDB environment variables
+
+InfluxDB client libraries require configuration properties from your InfluxDB environment.
+Typically, you'll provide the following properties as environment variables accessible by your application:
+
+- `INFLUX_URL`
+- `INFLUX_TOKEN`
+- `INFLUX_ORG`
+- `INFLUX_BUCKET`
+- `INFLUX_BUCKET_AUTH`
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
 
 Next.js provides an `env` module to configure environment variables.
 Create an `.env.local` file to store development configuration settings for your app
@@ -103,16 +86,236 @@ const bucketsAPI = new BucketsAPI(influxdb)
 bucketsAPI.getBuckets({name: process.env.INFLUX_BUCKET, orgID: process.env.INFLUX_ORG})
 ```
 
-## Create a custom app with a shared layout
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
+
+## Create a shared layout in a custom app
+
+Create a shared UI layout that applies a header, footer, and CSS to all `pages` in your app.
+To create the shared layout, do the following:
+
+1. [create a shared layout component](): Add a `Layout` component that renders the header, footer, and CSS.
+2. [create a custom app component](): Add a custom app that imports your `Layout` component to wrap `/pages` components.
 
 ### Create a shared layout component
 
-Create a `pages/_index.js` file that contains the following;
+To add the `Layout` component, create a `pages/_app.js` file that contains the following:
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+
+```js
+import Head from 'next/head'
+
+export default function Layout({ children }) {
+  return (
+    <div className="container">
+      <Head>
+        <title>IoT Starter</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <main>{children}</main>
+
+      <footer>
+        <a
+          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Powered by{' '}
+          <img src="/vercel.svg" alt="Vercel" className="logo" />
+        </a>
+      </footer>
+
+      <style jsx global>{`
+        .container {
+          min-height: 100vh;
+          padding: 0 0.5rem;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+        main {
+          padding: 5rem 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+        footer {
+          width: 100%;
+          height: 100px;
+          border-top: 1px solid #eaeaea;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        footer img {
+          margin-left: 0.5rem;
+        }
+
+        footer a {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        form input {
+          margin-left: 0.5rem;
+        }
+
+        .title a {
+          color: #0070f3;
+          text-decoration: none;
+        }
+
+        .title a:hover,
+        .title a:focus,
+        .title a:active {
+          text-decoration: underline;
+        }
+
+        .title {
+          margin: 0;
+          line-height: 1.15;
+          font-size: 4rem;
+        }
+
+        .title,
+        .description {
+          text-align: center;
+        }
+
+        .description {
+          line-height: 1.5;
+          font-size: 1.5rem;
+        }
+
+        code {
+          background: #fafafa;
+          border-radius: 5px;
+          padding: 0.75rem;
+          font-size: 1.1rem;
+          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
+            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
+        }
+
+        .grid {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+
+          max-width: 800px;
+          margin-top: 3rem;
+        }
+
+        .card {
+          margin: 1rem;
+          flex-basis: 45%;
+          padding: 1.5rem;
+          text-align: left;
+          color: inherit;
+          text-decoration: none;
+          border: 1px solid #eaeaea;
+          border-radius: 10px;
+          transition: color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .card:hover,
+        .card:focus,
+        .card:active {
+          color: #0070f3;
+          border-color: #0070f3;
+        }
+
+        .card h3 {
+          margin: 0 0 1rem 0;
+          font-size: 1.5rem;
+        }
+
+        .card p {
+          margin: 0;
+          font-size: 1.25rem;
+          line-height: 1.5;
+        }
+
+        .card .alert.alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .logo {
+          height: 1em;
+        }
+
+        @media (max-width: 600px) {
+          .grid {
+            width: 100%;
+            flex-direction: column;
+          }
+        }
+
+        html,
+        body {
+          padding: 0;
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+            sans-serif;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+      `}</style>
+    </div>
+  )
+}
+```
+
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
 
 ### Create a custom app component
 
-Create a `pages/_app.js` file that contains the following:
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
 
+To add the custom app component, create a `pages/_app.js` file that contains the following:
+
+```js
+import Layout from './_layout'
+
+export default function IotStarter({ Component, pageProps }) {
+  return (
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
+  )
+}
+```
+
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
 
 ## List devices
 
