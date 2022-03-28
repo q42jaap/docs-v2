@@ -36,7 +36,7 @@ npm i @influxdata/influxdb-client
 
 ## Install InfluxDB client library for management APIs
 
-From your app directory, install `@influxdata/influxdb-client-apis` to create, modify, and delete buckets, tasks, authorizations, and other InfluxDB resources.
+From your app directory, install `@influxdata/influxdb-client-apis` to create, modify, and delete authorizations, buckets, tasks, and other InfluxDB resources.
 
 ```sh
 npm i @influxdata/influxdb-client-apis
@@ -45,7 +45,7 @@ npm i @influxdata/influxdb-client-apis
 ## Set InfluxDB environment variables
 
 InfluxDB client libraries require configuration properties from your InfluxDB environment.
-Typically, you'll provide the following properties as environment variables accessible by your application:
+Typically, you'll provide the following properties as environment variables for your application:
 
 - `INFLUX_URL`
 - `INFLUX_TOKEN`
@@ -59,9 +59,8 @@ Typically, you'll provide the following properties as environment variables acce
 {{% /code-tabs %}}
 {{% code-tab-content %}}
 
-Next.js provides an `env` module to configure environment variables.
-Create an `.env.local` file to store development configuration settings for your app
-and prevent them being added to version control.
+Next.js provides an `env` module to provide environment variables to your app and prevents them being added to version control.
+Create an `.env.local` file that contains settings for your _development_ environment.
 
 ```sh
 # .env.local
@@ -89,17 +88,26 @@ bucketsAPI.getBuckets({name: process.env.INFLUX_BUCKET, orgID: process.env.INFLU
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-## Create a shared layout in a custom app
+## Create devices UI
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+
+### Create a shared layout in a custom app
 
 Create a shared UI layout that applies a header, footer, and CSS to all `pages` in your app.
 To create the shared layout, do the following:
 
-1. [create a shared layout component](): Add a `Layout` component that renders the header, footer, and CSS.
-2. [create a custom app component](): Add a custom app that imports your `Layout` component to wrap `/pages` components.
+1. [create a shared layout component](#create-a-shared-layout-component)
+2. [create a custom app component](#create-a-custom-app-component)
 
-### Create a shared layout component
+#### Create a shared layout component
 
-To add the `Layout` component, create a `pages/_app.js` file that contains the following:
+Add a `Layout` component that renders a header, footer, and CSS.
+To add the `Layout` component, create a `pages/_layout.js` file that contains the following:
 
 {{< code-tabs-wrapper >}}
 {{% code-tabs %}}
@@ -292,14 +300,9 @@ export default function Layout({ children }) {
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-### Create a custom app component
+#### Create a custom app component
 
-{{< code-tabs-wrapper >}}
-{{% code-tabs %}}
-[Node.js](#nodejs)
-{{% /code-tabs %}}
-{{% code-tab-content %}}
-
+Add a custom app that imports your `Layout` component to wrap `/pages` routes.
 To add the custom app component, create a `pages/_app.js` file that contains the following:
 
 ```js
@@ -314,18 +317,149 @@ export default function IotStarter({ Component, pageProps }) {
 }
 ```
 
+### Create the devices page
+
+#### Create the devices list UI component
+
+Add a `Devices` UI component that retrieves and displays the list of devices from your `/api/devices` IoT Starter endpoint.
+The example code below retrieves the list on every component render.
+To add the component, create a `pages/_devices.js` file that contains the following:
+
+```js
+import React, { useState, useEffect } from 'react';
+
+export default function Devices() {
+    const [data, setData] = useState(null)
+    const [isLoading, setLoading] = useState(false)
+
+    useEffect(() => {
+      setLoading(true)
+      fetch('api/devices')
+        .then((res) => res.json())
+        .then((data) => {
+          if(Array.isArray(data)) {
+            setData(data)
+          }
+          if(data.error) {
+            console.log(data.error)
+          }
+          setLoading(false)
+        })
+    }, [])
+
+    if (isLoading) return <p>Loading...</p>
+    if (!data) return <p>No device data</p>
+
+  return (
+    <>
+        <h2>Registered devices</h2>
+
+        { data.map(item => (
+            <dl key={item.key}>
+            <dt>{item.deviceId}</dt>
+            <dd>Updated at: {item.updatedAt}</dd>
+            </dl>)
+          )
+        }
+
+    </>
+  )
+}
+```
+
+#### Create the register device UI component
+
+Add a `CreateDevice` component that provides a form to register devices
+and renders the list from your [Devices component](#create-the-devices-list-ui-component).
+When the user enters a device ID and clicks the **Register** button, the component passes the device ID in a `POST` request to the [`/api/devices/create`](#create-the-) IoT Starter endpoint.
+To add the component, create a `pages/devices/_createDevice.js` file that contains the following:
+
+```js
+import React, { useState, useEffect } from 'react'
+import Devices from './_devices'
+
+export default function CreateDevice() {
+  const [device, setDevice] = useState(null)
+  const [isLoading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [deviceId, setDeviceId] = useState('')
+
+  function handleRegister(event) {
+    setLoading(true)
+    const body = JSON.stringify({ deviceId })
+
+    fetch('/api/devices/create', { method: 'POST', body })
+      .then((res) => res.json())
+      .then((data) => {
+        if(Array.isArray(data)) {
+          setDevice(data)
+        }
+        if(data.error) {
+          setError(data.error)
+        }
+        setLoading(false)
+      })
+  }
+
+  function handleChange(event) {
+    setError('')
+    setDeviceId(event.target.value)
+  }
+
+  if (isLoading) return <p>Loading...</p>
+
+  return (
+    <>
+      { error &&
+         <div className="alert alert-danger">{ error }</div>
+      }
+      <h2>Register a device</h2>
+      <form onSubmit={ handleRegister }>
+        <label>
+          New device ID:
+          <input type="text" name="register_deviceId" onChange={ handleChange } />
+        </label>
+        <input type="submit" value="Register" />
+      </form>
+
+      <div>
+        <Devices />
+      </div>
+    </>
+  )
+}
+
+```
+
+
+
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-## List devices
+## Build the IoT Starter API
+
+Build an IoT Starter API that provides URL endpoints and routes HTTP requests to your server-side code.
+
+Each API endpoint does the following:
+
+- listens for requests from IoT Starter UI components
+- translates requests into InfluxDB API requests
+- processes InfluxDB API responses and handle errors
+- provides data to UI components
+
+- [Create the API endpoint to list devices](#create-the-api-endpoint-to-list-devices)
+- [Create the API endpoint to register devices](#create-the-api-endpoint-to-register-devices)
+
+
+## Create the API endpoint to list devices
 
 To retrieve registered devices, send a Flux query to the `POST /api/v2/query` InfluxDB API endpoint.
 
-- [Create the Flux query]()
-- [Execute the query and process results]()
-- [Copy the sample code]()
+- [Create the Flux query](#create-the-flux-query-to-find-devices)
+- [Execute the query and process rows](#execute-the-query-and-process-rows)
+- [Copy the list devices example](#copy-the-list-devices-example)
 
-### Create the Flux query
+### Create the Flux query to find devices
 
 To retrieve registered devices from your `INFLUX_BUCKET_AUTH` bucket, get the last row of each [series]() that contains a `deviceauth` measurement. The example below returns rows that contain the `key` field (authorization ID) and excludes rows that contain a `token` field (to avoid exposing sensitive token values).
 
@@ -337,7 +471,7 @@ To retrieve registered devices from your `INFLUX_BUCKET_AUTH` bucket, get the la
       |> last()
 ```
 
-### Execute the query and process results
+### Execute the query and process rows
 
 {{< code-tabs-wrapper >}}
 {{% code-tabs %}}
@@ -359,6 +493,7 @@ To send the query and process the results, use the QueryAPI `queryRows(query, co
 {{% caption %}}[@influxdata/influxdb-client-js QueryAPI, line 92](https://github.com/influxdata/influxdb-client-js/blob/3db2942432b993048d152e0d0e8ec8499eedfa60/packages/core/src/QueryApi.ts#L92){{% /caption %}}
 
 The `consumer` that you provide must implement the [`FluxResultObserver` interface](https://github.com/influxdata/influxdb-client-js/blob/3db2942432b993048d152e0d0e8ec8499eedfa60/packages/core/src/results/FluxResultObserver.ts#L7) that provides the following callback functions:
+
 - `next(row, tableMeta)`: processes the next row and table metadata (e.g., by transforming data for the response)
 - `error(error)`: receives and handles errors (e.g., by rejecting the Promise)
 - `complete()`: called and signals when all rows have been consumed (e.g., by resolving the Promise)
@@ -367,7 +502,7 @@ To learn more about Observers, see the [RxJS Guide](https://rxjs.dev/guide/obser
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-### Copy the list devices example
+### Copy the example to get devices
 
 {{< code-tabs-wrapper >}}
 {{% code-tabs %}}
@@ -389,7 +524,9 @@ To add a `_devices` module that exports the `getDevices(deviceId)` function, do 
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-### Create the API route
+Next, [create an API route](#create-the-api-route-to-get-devices) that responds with the devices list.
+
+### Create the API route to get devices
 
 {{< code-tabs-wrapper >}}
 {{% code-tabs %}}
@@ -411,7 +548,7 @@ The example below exports a server request `handler` function that listens for r
 
 Next, learn how to add an endpoint that [registers a device](#register-a-device).
 
-## Register a device
+## Create the API endpoint to register devices
 
 In **IoT Starter**, a _registered device_ is a point that contains your device ID and authorization details (API token and authorization ID).
 A device authorization defines _read_ and _write_ permissions on `INFLUX_BUCKET`.
@@ -461,6 +598,7 @@ async function getBucketId() {
 
 To create an authorization and receive an API token for the device, use the InfluxDB client library to send a `POST` request to the `/api/v2/authorizations` InfluxDB API endpoint.
 In your request body, pass an authorization with the following:
+
 - description `IoTCenterDevice: DEVICE_ID` 
 - array of permissions for the [bucket ID](#get-the-bucket-id)
 
@@ -470,11 +608,13 @@ In your request body, pass an authorization with the following:
 {{% /code-tabs %}}
 {{% code-tab-content %}}
 
-The example below does the following:
+The example below creates an authorization with the Javascript client library in four steps:
 
-- instantiates the InfluxDB client, AuthorizationsAPI client, and BucketsAPI client
-- calls the BucketsAPI `getBuckets` function and returns the bucket ID
-- calls the AuthorizationsAPI `postAuthorization` function and returns the new authorization
+1. Instantiates the `InfluxDB` client as `influxdb`
+2. Instantiates the Authorizations client with the `influxdb` configuration
+3. Instantiates the and Buckets client with the `influxdb` configuration
+4. Calls the BucketsAPI `getBuckets` function to get the bucket ID for `INFLUX_BUCKET`
+5. Calls the AuthorizationsAPI `postAuthorization` function with a new authorization and returns the result from InfluxDB.
 
 ```js
 import { InfluxDB } from '@influxdata/influxdb-client'
