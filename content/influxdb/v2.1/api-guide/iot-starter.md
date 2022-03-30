@@ -88,7 +88,7 @@ bucketsAPI.getBuckets({name: process.env.INFLUX_BUCKET, orgID: process.env.INFLU
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
 
-## Create devices UI
+## Create UI layout
 
 {{< code-tabs-wrapper >}}
 {{% code-tabs %}}
@@ -101,8 +101,8 @@ bucketsAPI.getBuckets({name: process.env.INFLUX_BUCKET, orgID: process.env.INFLU
 Create a shared UI layout that applies a header, footer, and CSS to all `pages` in your app.
 To create the shared layout, do the following:
 
-1. [create a shared layout component](#create-a-shared-layout-component)
-2. [create a custom app component](#create-a-custom-app-component)
+1. [Create a shared layout component](#create-a-shared-layout-component)
+2. [Create a custom app component](#create-a-custom-app-component)
 
 #### Create a shared layout component
 
@@ -317,68 +317,79 @@ export default function IotStarter({ Component, pageProps }) {
 }
 ```
 
-### Create the devices page
+### Create devices UI components
 
-#### Create the devices list UI component
+#### Create the devices list component
 
-Add a `Devices` UI component that retrieves and displays the list of devices from your `/api/devices` IoT Starter endpoint.
-The example code below retrieves the list on every component render.
-To add the component, create a `pages/_devices.js` file that contains the following:
+Add a `DeviceList` UI component that retrieves and displays the list of devices from your `/api/devices` IoT Starter endpoint.
+The example code below requests and renders devices from `/api/devices` whenever the `deviceId` property changes.
+
+To add the component, create a `pages/_deviceList.js` file that contains the following:
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
 
 ```js
 import React, { useState, useEffect } from 'react';
 
-export default function Devices() {
-    const [data, setData] = useState(null)
-    const [isLoading, setLoading] = useState(false)
+export default function DeviceList({ deviceId, onError, isLoading}) {
+ const [data, setData] = useState(null)
 
-    useEffect(() => {
-      setLoading(true)
-      fetch('api/devices')
-        .then((res) => res.json())
-        .then((data) => {
-          if(Array.isArray(data)) {
-            setData(data)
-          }
-          if(data.error) {
-            console.log(data.error)
-          }
-          setLoading(false)
-        })
-    }, [])
-
-    if (isLoading) return <p>Loading...</p>
-    if (!data) return <p>No device data</p>
+  useEffect(() => {
+    isLoading(true)
+    fetch(`api/devices/${deviceId || ''}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if(Array.isArray(data)) {
+        setData(data)
+      }
+      if(data.error) {
+        onError(data.error)
+      }
+      isLoading(false)
+    })
+  }, [deviceId])
 
   return (
-    <>
-        <h2>Registered devices</h2>
-
-        { data.map(item => (
-            <dl key={item.key}>
-            <dt>{item.deviceId}</dt>
-            <dd>Updated at: {item.updatedAt}</dd>
-            </dl>)
+      <dl>
+      { Array.isArray(data) ?
+        data.map(item => (
+          <React.Fragment key={item.key}>
+          <dt id={'deviceId_' + item.key}>{item.deviceId}</dt>
+          <dd key={item.key + '_detail'}>Updated at: {item.updatedAt}</dd>
+          </React.Fragment>
           )
-        }
-
-    </>
+        ) : <p>No device data</p>
+      }
+      </dl>
   )
 }
+
 ```
 
-#### Create the register device UI component
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
 
-Add a `CreateDevice` component that provides a form to register devices
-and renders the list from your [Devices component](#create-the-devices-list-ui-component).
-When the user enters a device ID and clicks the **Register** button, the component passes the device ID in a `POST` request to the [`/api/devices/create`](#create-the-) IoT Starter endpoint.
-To add the component, create a `pages/devices/_createDevice.js` file that contains the following:
+#### Create the register device form component
+
+Create a `DeviceRegistrationButton` component that renders a button to submit a new device ID.
+When the user enters a device ID and clicks the **Register** button, the component passes the device ID in a `POST` request to the `/api/devices/create` IoT Starter endpoint (you'll create in a [later step](#create-the-api-endpoint-to-register-devices).
+To add the UI component, create a `pages/devices/_deviceRegistrationButton.js` file that contains the following:
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
 
 ```js
 import React, { useState, useEffect } from 'react'
 import Devices from './_devices'
 
-export default function CreateDevice() {
+export default function DeviceRegistrationForm() {
   const [device, setDevice] = useState(null)
   const [isLoading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -431,7 +442,74 @@ export default function CreateDevice() {
 
 ```
 
+{{% /code-tab-content %}}
+{{< /code-tabs-wrapper >}}
 
+#### Create the devices page component
+
+Add a `DevicesCard` component that renders a form to register a new device, list
+all devices, or find a specific registered device.
+Your component should manage the following _state_ properties:
+
+- `deviceId`
+- `error`
+- `isLoading`
+  
+and contain a `form` with the the following:
+
+- device ID **text input** that sets the `deviceId` property
+- [`DeviceRegistrationButton`](#create-the-device-registration-button-component) that takes `deviceId` and callback functions to handle _error_ and _loading_ statuses
+- [`DeviceList`](#create-the-devices-list-ui-component) component that takes `deviceId` and a callback function to handle _loading_ status
+
+To create a `DevicesCard` component that serves as the default devices page at `http://localhost:3000/devices/`, create a `<iot-starter-root>/pages/devices/index.js` file that contains the following:
+
+{{< code-tabs-wrapper >}}
+{{% code-tabs %}}
+[Node.js](#nodejs)
+{{% /code-tabs %}}
+{{% code-tab-content %}}
+
+```js
+import React, { useState } from 'react'
+import DeviceRegistrationButton from './_deviceRegistrationButton'
+import DeviceList from './_deviceList'
+
+export default function DevicesCard() {
+  const [deviceId, setDeviceId] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  function handleChange(event) {
+    setError('')
+    setDeviceId(event.target.value)
+  }
+
+  function handleError(error) {
+    console.log(error)
+    setError(error)
+  }
+
+  return(
+      <div className="card">
+        <div className="alert">
+        { isLoading && <span>Loading...</span>}
+        { error &&
+          <span className="alert-danger">{ error }</span>
+        }
+        </div>
+        <form>
+          <label>
+            Device ID:
+            <input type="text" name="register_deviceId" onChange={ handleChange } />
+          </label>
+          <DeviceRegistrationButton deviceId={ deviceId } onError={ handleError } isLoading={ setIsLoading } />
+          <h2>Registered devices</h2>
+          <DeviceList deviceId={ deviceId } isLoading={ setIsLoading }  />
+        </form>
+      </div>
+  )
+}
+```
 
 {{% /code-tab-content %}}
 {{< /code-tabs-wrapper >}}
@@ -444,7 +522,7 @@ Each API endpoint does the following:
 
 - listens for requests from IoT Starter UI components
 - translates requests into InfluxDB API requests
-- processes InfluxDB API responses and handle errors
+- processes InfluxDB API responses and handles errors
 - provides data to UI components
 
 - [Create the API endpoint to list devices](#create-the-api-endpoint-to-list-devices)
