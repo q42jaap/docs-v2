@@ -3358,6 +3358,11 @@ components:
           type: boolean
         localBucketID:
           type: string
+        maxAgeSeconds:
+          default: 604800
+          format: int64
+          minimum: 0
+          type: integer
         maxQueueSizeBytes:
           default: 67108860
           format: int64
@@ -3378,6 +3383,7 @@ components:
         - localBucketID
         - remoteBucketID
         - maxQueueSizeBytes
+        - maxAgeSeconds
       type: object
     ReplicationUpdateRequest:
       properties:
@@ -3385,6 +3391,10 @@ components:
           type: string
         dropNonRetryableData:
           type: boolean
+        maxAgeSeconds:
+          format: int64
+          minimum: 0
+          type: integer
         maxQueueSizeBytes:
           format: int64
           minimum: 33554430
@@ -5934,6 +5944,7 @@ components:
           type: array
       type: object
     WritePrecision:
+      default: ns
       enum:
         - ms
         - s
@@ -6048,25 +6059,40 @@ components:
   securitySchemes:
     BasicAuthentication:
       description: >
-        Use the HTTP Basic authentication scheme for InfluxDB `/api/v2` API
-        operations that support it.
+        Basic authentication scheme for API requests.
+
+
+        Use HTTP Basic Auth with clients that support the InfluxDB 1.x
+        convention of username and password (that don't support the
+        `Authorization: Token` scheme).
 
 
         Username and password schemes require the following credentials:
-          - **username**
-          - **password**
+          - **username**: 1.x username (this is separate from the UI login username)
+          - **password**: 1.x password or InfluxDB API token
+
+        #### Example
+
+
+        `curl --get "http://localhost:8086/query"
+              --user "YOUR_1.x_USERNAME":"YOUR_TOKEN_OR_PASSWORD"`
+
+        For more information and examples, see how to [authenticate with a
+        username and password scheme](/influxdb/v2.2/reference/api/influxdb-1x/)
       scheme: basic
       type: http
     TokenAuthentication:
       description: >
+        Token authentication scheme for API requests.
+
+
         Use the [Token
         authentication](#section/Authentication/TokenAuthentication)
 
-        scheme to authenticate to the InfluxDB API.
+        scheme to authenticate requests to InfluxDB API endpoints.
 
 
-
-        In your API requests, send an `Authorization` header.
+        In your request, send an `Authorization` header.
 
         For the header value, provide the word `Token` followed by a space and
         an InfluxDB API token.
@@ -6074,27 +6100,29 @@ components:
         The word `Token` is case-sensitive.
 
 
-
-        ### Syntax
+        #### Syntax
 
 
         `Authorization: Token YOUR_INFLUX_TOKEN`
 
 
-
         For more information and examples, see the following:
-          - [`/authorizations`](#tag/Authorizations) endpoint.
-          - [Authorize API requests](/influxdb/v2.1/api-guide/api_intro/#authentication).
-          - [Manage API tokens](/influxdb/v2.1/security/tokens/).
+
+        - [`/authorizations`](#tag/Authorizations) endpoint.
+
+        - [Authorize API
+        requests](/influxdb/v2.1/api-guide/api_intro/#authentication).
+
+        - [Manage API tokens](/influxdb/v2.1/security/tokens/).
       in: header
       name: Authorization
       type: apiKey
 info:
   title: InfluxDB OSS API Service
+  version: 2.0.0
   description: >
     The InfluxDB v2 API provides a programmatic interface for all interactions
     with InfluxDB. Access the InfluxDB API using the `/api/v2/` endpoint.
-  version: 2.0.0
 openapi: 3.0.0
 paths:
   /api/v2:
@@ -10716,17 +10744,28 @@ paths:
               - application/json
               - application/vnd.flux
             type: string
-        - description: >-
-            Name of the organization executing the query. Accepts either the ID
-            or Name. If you provide both `orgID` and `org`, `org` takes
-            precedence.
+        - description: >
+            The name of the organization executing the query.
+
+
+            If you provide both `orgID` and `org`, `org` takes precedence.
+
+
+            To find your organization, see how to [view
+            organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/)
           in: query
           name: org
           schema:
             type: string
-        - description: >-
-            ID of the organization executing the query. If you provide both
-            `orgID` and `org`, `org` takes precedence.
+        - description: >
+            The ID of the organization executing the query.
+
+
+            If you provide both `orgID` and `org`, `org` takes precedence.
+
+
+            To find your organization, see how to [view
+            organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/)
           in: query
           name: orgID
           schema:
@@ -10743,7 +10782,7 @@ paths:
                   |> filter(fn: (r) => r._measurement == "example-measurement")
             schema:
               type: string
-        description: Flux query or specification to execute
+        description: The Flux query or the query specification to execute.
       responses:
         '200':
           content:
@@ -10755,25 +10794,25 @@ paths:
                   mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
                   mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
                 type: string
-          description: Success. Returns query results.
+          description: Success. The response body contains query results.
           headers:
             Content-Encoding:
               description: >-
-                Lists any encodings (usually compression algorithms) that have
-                been applied to the response payload.
+                A list of encodings (usually compression algorithms) applied to
+                the response payload.
               schema:
                 default: identity
                 description: >
-                  Content coding: `gzip` for compressed data or `identity` for
-                  unmodified, uncompressed data.
+                  The content coding: `gzip` for compressed data or `identity`
+                  for unmodified, uncompressed data.
                 enum:
                   - gzip
                   - identity
                 type: string
             Trace-Id:
-              description: If generated, trace ID of the request.
+              description: The trace ID, if generated, of the request.
               schema:
-                description: Trace ID of a request.
+                description: The trace ID of a request.
                 type: string
         '429':
           description: |
@@ -10789,7 +10828,7 @@ paths:
           headers:
             Retry-After:
               description: >-
-                Non-negative decimal integer indicating seconds to wait before
+                A non-negative decimal integer indicating seconds to wait before
                 retrying the request.
               schema:
                 format: int32
@@ -10799,7 +10838,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Error processing query
+          description: Error processing query.
       summary: Query data
       tags:
         - Query
@@ -14128,33 +14167,30 @@ paths:
         Writes data to a bucket.
 
 
-        To write data into InfluxDB, you need the following:
+        Use this endpoint to write data in line protocol format to a bucket.
+
+        Writes are asynchronous.
 
 
-        - **organization name or ID** – _See [View
-        organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/#view-your-organization-id)
-        for instructions on viewing your organization ID._
-
-        - **bucket** – _See [View
-        buckets](https://docs.influxdata.com/influxdb/v2.1/organizations/buckets/view-buckets/)
-        for
-         instructions on viewing your bucket ID._
-        - **API token** – _See [View
-        tokens](https://docs.influxdata.com/influxdb/v2.1/security/tokens/view-tokens/)
-         for instructions on viewing your API token._
-        - **InfluxDB URL** – _See [InfluxDB
-        URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)_.
-
-        - data in [line
-        protocol](https://docs.influxdata.com/influxdb/v2.1/reference/syntax/line-protocol)
-        format.
+        #### Required permissions
 
 
-        InfluxDB Cloud enforces rate and size limits different from InfluxDB
-        OSS. For details, see Responses.
+        - `write-buckets` or `write-bucket BUCKET_ID`
+              
+        `BUCKET_ID` is the ID of the destination bucket.
 
 
-        For more information and examples, see the following:
+        #### Rate limits (with InfluxDB Cloud)
+
+
+        `write` rate limits apply.
+
+        For more information, see [limits and adjustable
+        quotas]({/influxdb/cloud/account-management/limits/).
+
+
+        #### Related guides
+
 
         - [Write data with the InfluxDB
         API](https://docs.influxdata.com/influxdb/v2.1/write-data/developer-tools/api).
@@ -14168,59 +14204,74 @@ paths:
       parameters:
         - $ref: '#/components/parameters/TraceSpan'
         - description: >
-            The value tells InfluxDB what compression is applied to the line
-            protocol in the request payload.
+            The compression applied to the line protocol in the request payload.
 
-            To make an API request with a GZIP payload, send `Content-Encoding:
-            gzip` as a request header.
+
+            To send a GZIP payload, pass the `Content-Encoding: gzip` header in
+            your API request.
           in: header
           name: Content-Encoding
           schema:
             default: identity
-            description: >-
-              Content coding. Use `gzip` for compressed data or `identity` for
-              unmodified, uncompressed data.
+            description: |
+              The content coding.
             enum:
               - gzip
               - identity
             type: string
-        - description: >
-            Format of the data in the request body.
-
-            To make an API request with a line protocol payload, send
-            `Content-Type: text/plain; charset=utf-8` as a request header.
+        - description: |
+            The format of the data in the request body.
+          examples:
+            default:
+              description: |
+                `text/plain` is the content type for line protocol.
+                `UTF-8` is the default character set.
+              summary: Default content type for line protocol
+              value:
+                Content-Type: text/plain; charset=utf-8
           in: header
           name: Content-Type
           schema:
             default: text/plain; charset=utf-8
-            description: >
-              `text/plain` is the content type for line protocol. `UTF-8` is the
-              default character set.
+            description: |
+              Line protocol content type.
+
+              `text/plain` is the content type for line protocol.
+              `UTF-8` is the default character set.
             enum:
               - text/plain
               - text/plain; charset=utf-8
+            example:
+              Content-Type: text/plain; charset=utf-8
             type: string
-        - description: >-
-            Size of the entity-body, in bytes, sent to the database. If the
-            length is greater than the database's `max body` configuration
-            option, the server responds with status code `413`.
+        - description: The size of the entity-body, in bytes, sent to the database.
           in: header
           name: Content-Length
           schema:
             description: The length in decimal number of octets.
             type: integer
         - description: >
-            Content type that the client can understand. Writes only return a
-            response body if they fail, e.g. due to a formatting problem or
-            quota limit.
+            The content type that the client can understand.
+
+
+            Writes only return a response body if they fail,
+
+            e.g. due to a formatting problem or quota limit.
+
 
             #### InfluxDB Cloud
-              - returns only `application/json` for format and limit errors.
-              - returns only `text/html` for some quota limit errors.
+
+
+            - returns only `application/json` for format errors and most limit
+            errors.
+
+            - returns only `text/html` for some quota limit errors.
 
 
             #### InfluxDB OSS
-              - returns only `application/json` for format and limit errors.
+
+
+            - returns only `application/json` for format and limit errors.
 
 
             For more information about write errors, see how to [troubleshoot
@@ -14234,33 +14285,44 @@ paths:
             enum:
               - application/json
             type: string
-        - description: >-
-            Destination organization for writes. The database writes all points
-            in the batch to this organization. If you provide both `orgID` and
-            `org` parameters, `org` takes precedence.
+        - description: >
+            The destination organization for all points in the batch.
+
+
+            If you provide both `orgID` and `org` parameters, `org` takes
+            precedence.
+
+
+            To find your organization, see how to [view
+            organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/)
           in: query
           name: org
           required: true
           schema:
             description: Organization name or ID.
             type: string
-        - description: >-
-            ID of the destination organization for writes. If both `orgID` and
-            `org` are specified, `org` takes precedence.
+        - description: >
+            The ID of the destination organization for writes.
+
+
+            If both `orgID` and `org` are specified, `org` takes precedence.
+
+
+            To find your organization, see how to [view
+            organizations](https://docs.influxdata.com/influxdb/v2.1/organizations/view-orgs/)
           in: query
           name: orgID
           schema:
             type: string
-        - description: Destination bucket for writes.
+        - description: |
+            The destination bucket for all points in the batch.
           in: query
           name: bucket
           required: true
           schema:
-            description: All points within batch are written to this bucket.
+            description: null
             type: string
-        - description: >-
-            Precision for unix timestamps in the line protocol of the request
-            payload.
+        - description: The precision for unix timestamps in the line protocol batch.
           in: query
           name: precision
           schema:
@@ -14268,6 +14330,18 @@ paths:
       requestBody:
         content:
           text/plain:
+            examples:
+              line-protocol:
+                description: Data in line protocol format.
+                summary: Line protocol
+                value: >
+                  airSensors,sensor_id=TLM0201
+                  temperature=73.97038159354763,humidity=35.23103248356096,co=0.48445310567793615
+                  1630424257000000000
+
+                  airSensors,sensor_id=TLM0202
+                  temperature=75.30007505999716,humidity=35.651929918691714,co=0.5141876544505826
+                  1630424257000000000
             schema:
               format: byte
               type: string
@@ -14275,11 +14349,20 @@ paths:
         required: true
       responses:
         '204':
-          description: >-
+          description: >
+            Success.
+
             InfluxDB validated the request data format and accepted the data for
-            writing to the bucket. Because data is written to InfluxDB
-            asynchronously, data may not yet be written to a bucket. If some of
-            your data didn’t write to the bucket, see [how to check for write
+            writing to the bucket.
+
+            Because data is written to InfluxDB asynchronously, data may not yet
+            be written to a bucket.
+
+
+            #### Related guides
+
+
+            - See [how to check for write
             errors](https://docs.influxdata.com/influxdb/v2.1/write-data/troubleshoot/).
         '400':
           content:
@@ -14287,7 +14370,7 @@ paths:
               examples:
                 measurementSchemaFieldTypeConflict:
                   summary: >-
-                    InfluxDB Cloud field type conflict thrown by an explicit
+                    An InfluxDB Cloud field type conflict thrown by an explicit
                     bucket schema
                   value:
                     code: invalid
@@ -14299,9 +14382,10 @@ paths:
                       schema; got String but expected Float
               schema:
                 $ref: '#/components/schemas/LineProtocolError'
-          description: >-
-            Bad request. Line protocol data in the request is malformed. The
-            response body contains the first malformed line in the data.
+          description: |
+            The line protocol data in the request is malformed.
+            The response body contains the first malformed line in the data.
+
             InfluxDB rejected the batch and did not write any data.
         '401':
           content:
@@ -14363,27 +14447,45 @@ paths:
               schema:
                 type: string
           description: >
-            The request payload is too large. InfluxDB rejected the batch and
-            did not write any data.
+            The request payload is too large.
 
-            #### InfluxDB Cloud:
-              - returns this error if the request exceeds the maximum [global limit](https://docs.influxdata.com/influxdb/v2.1/account-management/limits/#global-limits).
-              - returns `Content-Type: text/html` for this error.
+            InfluxDB rejected the batch and did not write any data.
 
-            #### InfluxDB OSS:
-              - returns this error only if the [Go (golang) `ioutil.ReadAll()`](https://pkg.go.dev/io/ioutil#ReadAll) function raises an error.
-              - returns `Content-Type: application/json` for this error.
+
+            #### InfluxDB Cloud
+
+
+            - returns this error if the request exceeds the maximum [global
+            limit](https://docs.influxdata.com/influxdb/v2.1/account-management/limits/#global-limits).
+
+            - returns `Content-Type: text/html` for this error.
+
+
+            #### InfluxDB OSS
+
+
+            - returns this error only if the [Go (golang)
+            `ioutil.ReadAll()`](https://pkg.go.dev/io/ioutil#ReadAll) function
+            raises an error.
+
+            - returns `Content-Type: application/json` for this error.
         '429':
-          description: |
-            #### InfluxDB Cloud:
-              - returns this error if a **read** or **write** request exceeds your
+          description: >
+            #### InfluxDB Cloud
+
+
+            - returns `429` if a **read** or **write** request exceeds your
                 plan's [adjustable service quotas](https://docs.influxdata.com/influxdb/v2.1/account-management/limits/#adjustable-service-quotas)
                 or if a **delete** request exceeds the maximum
                 [global limit](https://docs.influxdata.com/influxdb/v2.1/account-management/limits/#global-limits).
-              - returns `Retry-After` header that describes when to try the write again.
+            - returns a `Retry-After` header that describes when to try the
+            write again.
 
-            #### InfluxDB OSS:
-              - doesn't return this error.
+
+            #### InfluxDB OSS
+
+
+            - doesn't return this error.
           headers:
             Retry-After:
               description: >-
@@ -14404,16 +14506,22 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Internal server error.
         '503':
-          description: |
-            #### InfluxDB Cloud:
-              - returns this error if series cardinality exceeds your plan's
-                [adjustable service quotas](https://docs.influxdata.com/influxdb/v2.1/account-management/limits/#adjustable-service-quotas).
-                See [how to resolve high series cardinality](https://docs.influxdata.com/influxdb/v2.1/write-data/best-practices/resolve-high-cardinality/).
+          description: >
+            #### InfluxDB Cloud
 
-            #### InfluxDB OSS:
-              - returns this error if
-                the server is temporarily unavailable to accept writes.
-              - returns `Retry-After` header that describes when to try the write again.
+
+            - returns `503` if series cardinality exceeds your plan's
+              [adjustable service quotas](https://docs.influxdata.com/influxdb/v2.1/account-management/limits/#adjustable-service-quotas).
+              See [how to resolve high series cardinality](https://docs.influxdata.com/influxdb/v2.1/write-data/best-practices/resolve-high-cardinality/).
+
+            #### InfluxDB OSS
+
+
+            - returns `503` if the server is temporarily unavailable to accept
+            writes.
+
+            - returns a `Retry-After` header that describes when to try the
+            write again.
           headers:
             Retry-After:
               description: >-
@@ -14432,17 +14540,21 @@ security:
 servers:
   - url: /
 tags:
-  - description: |
-      The InfluxDB `/api/v2` API requires authentication for all requests.
-      Use InfluxDB API tokens to authenticate requests to the `/api/v2` API.
+  - name: Authentication
+    description: >
+      Use one of the following schemes to authenticate to the InfluxDB API:
 
-      For examples and more information, see
-      [Token authentication](#section/Authentication/TokenAuthentication)
+      - [Token authentication](#section/Authentication/TokenAuthentication)
+
+      - [Basic authentication](#section/Authentication/BasicAuthentication)
+
+      - [Querystring
+      authentication](#section/Authentication/QuerystringAuthentication)
 
       <!-- ReDoc-Inject: <security-definitions> -->
-    name: Authentication
     x-traitTag: true
-  - description: >
+  - name: Authorizations
+    description: >
       Create and manage API tokens. An **authorization** associates a list of
       permissions to an **organization** and provides a token for API access.
 
@@ -14451,25 +14563,18 @@ tags:
 
 
       For more information and examples, see the following:
-        - [Authorize API requests](/influxdb/v2.1/api-guide/api_intro/#authentication).
-        - [Manage API tokens](/influxdb/v2.1/security/tokens/).
-        - [Assign a token to a specific user](/influxdb/v2.1/security/tokens/create-token/).
-    name: Authorizations
+        - [Authorize API requests](/influxdb/v2.2/api-guide/api_intro/#authentication).
+        - [Manage API tokens](/influxdb/v2.2/security/tokens/).
+        - [Assign a token to a specific user](/influxdb/v2.2/security/tokens/create-token/).
   - name: Backup
-    description: ''
   - name: Buckets
-    description: ''
   - name: Cells
-    description: ''
   - name: Checks
-    description: ''
   - name: Config
-    description: ''
   - name: Dashboards
-    description: ''
   - name: DBRPs
-    description: ''
-  - description: >
+  - name: Debug
+    description: >
       Routes under `/debug/pprof` generate profiling and trace reports
 
       you can use to analyze the Go runtime of InfluxDB.
@@ -14484,29 +14589,50 @@ tags:
       the following resources:
         - [Google pprof tool](https://github.com/google/pprof)
         - [Golang diagnostics](https://go.dev/doc/diagnostics)
-    name: Debug
   - name: Delete
-    description: ''
+  - name: Headers
+    x-traitTag: true
+    description: >
+      InfluxDB API endpoints use standard HTTP request and response headers.
+
+
+      **Note**: Not all operations support all headers.
+
+
+      | Header                   | Value type            |
+      Description                                |
+
+      |:------------------------ |:---------------------
+      |:-------------------------------------------|
+
+      | `Accept`                 | string                | The content type that
+      the client can understand. |
+
+      | `Authorization`          | string                | The authorization
+      scheme and credential. |
+
+      | `Content-Encoding`       | string                | The compression
+      applied to the line protocol in the request payload. |
+
+      | `Content-Length`         | integer               | The size of the
+      entity-body, in bytes, sent to the database. |
+
+      | `Content-Type`           | string                | The format of the
+      data in the request body. |
   - name: Health
-    description: ''
   - name: Labels
-    description: ''
   - name: Legacy Authorizations
-    description: ''
   - name: Metrics
-    description: ''
   - name: NotificationEndpoints
-    description: ''
   - name: NotificationRules
-    description: ''
   - name: Organizations
-    description: ''
   - name: Ping
-    description: ''
-  - description: |
+  - name: Query
+    description: |
       Retrieve data, analyze queries, and get query suggestions.
-    name: Query
-  - description: >
+  - name: Quick start
+    x-traitTag: true
+    description: >
       See the [**API Quick Start**](/influxdb/v2.1/api-guide/api_intro/) to get
       up and running authenticating with tokens, writing to buckets, and
       querying data.
@@ -14515,19 +14641,15 @@ tags:
       [**InfluxDB API client
       libraries**](/influxdb/v2.1/api-guide/client-libraries/) are available for
       popular languages and ready to import into your application.
-    name: Quick start
-    x-traitTag: true
   - name: Ready
-    description: ''
   - name: RemoteConnections
-    description: ''
   - name: Replications
-    description: ''
   - name: Resources
-    description: ''
-  - description: >
-      The InfluxDB API uses standard HTTP status codes for success and failure
-      responses.
+  - name: Response codes
+    x-traitTag: true
+    description: >
+      InfluxDB API endpoints use standard HTTP status codes for success and
+      failure responses.
 
       The response body may include additional details. For details about a
       specific operation's response, see **Responses** and **Response Samples**
@@ -14577,48 +14699,31 @@ tags:
       | `503`       | Service unavailable      | Server is temporarily
       unavailable to process the request. The `Retry-After` header describes
       when to try the request again. |
-    name: Response codes
-    x-traitTag: true
   - name: Restore
-    description: ''
   - name: Routes
-    description: ''
   - name: Rules
-    description: ''
   - name: Scraper Targets
-    description: ''
   - name: Secrets
-    description: ''
   - name: Setup
-    description: ''
   - name: Signin
-    description: ''
   - name: Signout
-    description: ''
   - name: Sources
-    description: ''
   - name: Tasks
-    description: ''
   - name: Telegraf Plugins
-    description: ''
   - name: Telegrafs
-    description: ''
   - name: Templates
-    description: ''
   - name: Users
-    description: ''
   - name: Variables
-    description: ''
   - name: Views
-    description: ''
-  - description: |
+  - name: Write
+    description: |
       Write time series data to buckets.
-    name: Write
 x-tagGroups:
   - name: Overview
     tags:
       - Quick start
       - Authentication
+      - Headers
       - Response codes
   - name: Data I/O endpoints
     tags:

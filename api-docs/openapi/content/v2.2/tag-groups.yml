@@ -2,6 +2,7 @@
   tags:
     - Quick start
     - Authentication
+    - Headers
     - Response codes
 - name: Data I/O endpoints
   tags:

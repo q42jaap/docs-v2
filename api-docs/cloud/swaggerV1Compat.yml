@@ -486,8 +486,10 @@ tags:
 
       <!-- ReDoc-Inject: <security-definitions> -->
     x-traitTag: true
-  - Query
-  - Write
+  - name: Query
+    description: ''
+  - name: Write
+    description: ''
 x-tagGroups:
   - name: Overview
     tags:

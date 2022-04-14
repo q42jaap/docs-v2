@@ -6,16 +6,40 @@
     - [Querystring authentication](#section/Authentication/QuerystringAuthentication)
     <!-- ReDoc-Inject: <security-definitions> -->
   x-traitTag: true
+- name: Debug
+  description: |
+    Routes under `/debug/pprof` generate profiling and trace reports
+    you can use to analyze the Go runtime of InfluxDB.
+    [Go runtime profiles](https://pkg.go.dev/runtime/pprof) are
+    collections of stack traces that show call sequences
+    leading to instances of a particular event, such as allocation.
+    For more information about **pprof profile** and **trace** reports, see the following resources:
+      - [Google pprof tool](https://github.com/google/pprof)
+      - [Golang diagnostics](https://go.dev/doc/diagnostics)
 - name: Quick start
   x-traitTag: true
   description: |
     See the [**API Quick Start**](https://docs.influxdata.com/influxdb/v2.1/api-guide/api_intro/) to get up and running authenticating with tokens, writing to buckets, and querying data.
 
     [**InfluxDB API client libraries**](https://docs.influxdata.com/influxdb/v2.1/api-guide/client-libraries/) are available for popular languages and ready to import into your application.
+- name: Headers
+  x-traitTag: true
+  description: |
+    InfluxDB API endpoints use standard HTTP request and response headers.
+
+    **Note**: Not all operations support all headers.
+
+    | Header                   | Value type            | Description                                |
+    |:------------------------ |:--------------------- |:-------------------------------------------|
+    | `Accept`                 | string                | The content type that the client can understand. |
+    | `Authorization`          | string                | The authorization scheme and credential. |
+    | `Content-Encoding`       | string                | The compression applied to the line protocol in the request payload. |
+    | `Content-Length`         | integer               | The size of the entity-body, in bytes, sent to the database. |
+    | `Content-Type`           | string                | The format of the data in the request body. |
 - name: Response codes
   x-traitTag: true
   description: |
-    The InfluxDB API uses standard HTTP status codes for success and failure responses.
+    InfluxDB API endpoints use standard HTTP status codes for success and failure responses.
     The response body may include additional details. For details about a specific operation's response, see **Responses** and **Response Samples** for that operation.
 
     API operations may return the following HTTP status codes:
@@ -40,4 +64,10 @@
     Write time series data to buckets.
 - name: Authorizations
   description: |
-    Create and manage API tokens. An **authorization** associates a list of permissions to an **organization** and provides a token for API access. To assign a token to a specific user, scope the authorization to the user ID.
+    Create and manage API tokens. An **authorization** associates a list of permissions to an **organization** and provides a token for API access.
+    Optionally, you can restrict an authorization and its token to a specific user.
+
+    For more information and examples, see the following:
+      - [Authorize API requests]({{% INFLUXDB_DOCS_URL %}}/api-guide/api_intro/#authentication).
+      - [Manage API tokens]({{% INFLUXDB_DOCS_URL %}}/security/tokens/).
+      - [Assign a token to a specific user]({{% INFLUXDB_DOCS_URL %}}/security/tokens/create-token/).
