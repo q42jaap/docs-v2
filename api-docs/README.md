@@ -26,6 +26,13 @@ api-docs/
   └── etc...
 ```
 
+`influxdata/openapi` does not version the InfluxData API.
+For convenience, we tag  `influxdata/influxdb` (OSS) release points in `influxdata/openapi` as
+`influxdb-oss-v[OSS_VERSION]`, e.g. https://github.com/influxdata/openapi/tags.
+To get the `influxdata/openapi` commit SHA used in a specific version of InfluxDB OSS,
+check that version (commit or tag) of `/scripts/fetch-swagger.sh` in `influxdata/influxdb`,
+e.g. https://github.com/influxdata/influxdb/blob/v2.2.0/scripts/fetch-swagger.sh#L13=.
+
 ### Fetch and process openapi contracts
 Update the contracts in `api-docs` to the latest from `influxdata/openapi`.
 

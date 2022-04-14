@@ -24,6 +24,20 @@
     See the [**API Quick Start**](https://docs.influxdata.com/influxdb/cloud/api-guide/api_intro/) to get up and running authenticating with tokens, writing to buckets, and querying data.
 
     [**InfluxDB API client libraries**](https://docs.influxdata.com/influxdb/cloud/api-guide/client-libraries/) are available for popular languages and ready to import into your application.
+- name: Headers
+  x-traitTag: true
+  description: |
+    InfluxDB API endpoints use standard HTTP request and response headers.
+
+    **Note**: Not all operations support all headers.
+
+    | Header                   | Value type            | Description                                |
+    |:------------------------ |:--------------------- |:-------------------------------------------|
+    | `Accept`                 | string                | The content type that the client can understand. |
+    | `Authorization`          | string                | The authorization scheme and credential. |
+    | `Content-Encoding`       | string                | The compression applied to the line protocol in the request payload. |
+    | `Content-Length`         | integer               | The size of the entity-body, in bytes, sent to the database. |
+    | `Content-Type`           | string                | The format of the data in the request body. |
 - name: Response codes
   x-traitTag: true
   description: |
@@ -52,4 +66,9 @@
     Write time series data to buckets.
 - name: Authorizations
   description: |
-    Create and manage API tokens. An **authorization** associates a list of permissions to an **organization** and provides a token for API access. To assign a token to a specific user, scope the authorization to the user ID.
+    Create and manage API tokens. An **authorization** associates a list of permissions to an **organization** and provides a token for API access. Optionally, you can restrict an authorization and its token to a specific user.
+
+    For more information and examples, see the following:
+      - [Authorize API requests]({{% INFLUXDB_DOCS_URL %}}/api-guide/api_intro/#authentication).
+      - [Manage API tokens]({{% INFLUXDB_DOCS_URL %}}/security/tokens/).
+      - [Assign a token to a specific user]({{% INFLUXDB_DOCS_URL %}}/security/tokens/create-token/).
