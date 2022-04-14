@@ -16,7 +16,7 @@
 # Syntax:
 #   sh ./getswagger.sh <context>
 #   sh ./getswagger.sh <context> -b <baseUrl>
-#   sh .getswagger.sh -c <context> -o <version> -b <baseUrl>
+#   sh ./getswagger.sh -c <context> -o <version> -b <baseUrl>
 #
 # Examples:
 #   sh ./getswagger.sh cloud
@@ -100,7 +100,10 @@ function postProcess() {
   npx --version
 
   # Use Redoc's openapi-cli to regenerate the spec with custom decorations.
-  INFLUXDB_API_VERSION=$apiVersion INFLUXDB_VERSION=$version npm_config_yes=true npx $openapiCLI bundle $specPath \
+  INFLUXDB_API_VERSION=$apiVersion \
+  INFLUXDB_VERSION=$version \
+  npm_config_yes=true \
+  npx $openapiCLI bundle $specPath \
     --config=./.redocly.yaml \
     -o $specPath
 }
